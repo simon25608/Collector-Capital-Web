@@ -70,7 +70,7 @@ export function ContactView() {
                 <div>
                   <h3 className="text-lg font-bold mb-1">{t('contact.priorityEmail')}</h3>
                   <p className="text-on-surface-variant text-sm mb-3">{t('contact.emailResponse')}</p>
-                  <span className="text-primary font-mono font-medium">support@forexcapital.global</span>
+                  <span className="text-primary font-mono font-medium">support@collectorcapital.global</span>
                 </div>
               </div>
             </div>

@@ -29,7 +29,7 @@ export function AuthView({ setView }: AuthViewProps) {
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Building2 className="text-on-primary w-6 h-6" />
             </div>
-            <span className="text-2xl font-black tracking-tighter text-on-surface">ForexCapital</span>
+            <span className="text-2xl font-black tracking-tighter text-on-surface">CollectorCapital</span>
           </div>
           <h1 className="text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight text-on-surface mb-6">
             {t('auth.joinTitle')} <span className="text-primary">{t('auth.joinHighlight')}</span> {t('auth.joinSuffix')}
@@ -60,7 +60,7 @@ export function AuthView({ setView }: AuthViewProps) {
             <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
               <Building2 className="text-on-primary w-4 h-4" />
             </div>
-            <span className="text-xl font-black tracking-tighter text-on-surface">ForexCapital</span>
+            <span className="text-xl font-black tracking-tighter text-on-surface">CollectorCapital</span>
           </div>
           <header className="mb-10">
             <h2 className="text-3xl font-bold tracking-tight text-on-surface mb-2">{t('auth.createAccount')}</h2>
@@ -95,7 +95,7 @@ export function AuthView({ setView }: AuthViewProps) {
             </div>
             <div>
               <label className="block text-sm font-medium text-on-surface-variant mb-2 ml-1">{t('auth.email')}</label>
-              <input className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface" placeholder="alex@forexcapital.com" type="email" />
+              <input className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface" placeholder="alex@collectorcapital.com" type="email" />
             </div>
             <div>
               <label className="block text-sm font-medium text-on-surface-variant mb-2 ml-1">{t('auth.password')}</label>

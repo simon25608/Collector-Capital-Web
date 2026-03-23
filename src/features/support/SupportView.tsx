@@ -24,7 +24,7 @@ export function SupportView({ onNavigate }: SupportViewProps) {
     { q: "Is my capital guaranteed?", a: "All investments carry risk. We employ strict risk management protocols." },
     { q: "What is the minimum deposit?", a: "The minimum deposit is $500 for standard accounts." },
     { q: "How are profits distributed?", a: "Profits are distributed monthly directly to your wallet." },
-    { q: "Is ForexCapital regulated?", a: "Yes, we are fully regulated by the global financial authorities." },
+    { q: "Is Collector Capital regulated?", a: "Yes, we are fully regulated by the global financial authorities." },
   ]
 
   return (
@@ -112,7 +112,7 @@ export function SupportView({ onNavigate }: SupportViewProps) {
             </div>
             <h3 className="text-lg font-bold mb-1">{t('support.priorityEmail')}</h3>
             <p className="text-on-surface-variant text-sm mb-3">{t('support.emailResponse')}</p>
-            <span className="text-primary font-mono font-medium">support@forexcapital.global</span>
+            <span className="text-primary font-mono font-medium">support@collectorcapital.global</span>
           </div>
           <div className="p-8 bg-surface-container-high rounded-xl hover:bg-surface-bright transition-all cursor-pointer">
             <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary mb-4">

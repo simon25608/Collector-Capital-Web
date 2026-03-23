@@ -14,7 +14,7 @@ export function Navbar({ currentView, setView }: { currentView: string, setView:
       <div className="flex items-center gap-8">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
           <Landmark className="text-primary w-6 h-6" />
-          <span className="text-xl font-bold tracking-tighter text-on-surface">ForexCapital</span>
+          <span className="text-xl font-bold tracking-tighter text-on-surface">CollectorCapital</span>
         </div>
         <div className="hidden md:flex gap-6">
           <button 
