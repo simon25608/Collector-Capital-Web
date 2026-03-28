@@ -1,5 +1,9 @@
-import { Building2, Eye, CheckCircle2 } from "lucide-react"
+import { Building2, Eye, EyeOff, CheckCircle2, Loader2 } from "lucide-react"
 import { useTranslation } from 'react-i18next';
+import React, { useState, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 interface AuthViewProps {
   setView: (view: string) => void;
@@ -7,6 +11,110 @@ interface AuthViewProps {
 
 export function AuthView({ setView }: AuthViewProps) {
   const { t } = useTranslation();
+  const [isLogin, setIsLogin] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+      fullName: '',
+      terms: false
+    }
+  });
+
+  const password = watch('password');
+
+  const passwordStrength = useMemo(() => {
+    if (!password) return 0;
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (/[A-Z]/.test(password)) score += 1;
+    if (/[a-z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    
+    if (password.length < 6) return 1;
+    if (score <= 2) return 2;
+    if (score <= 4) return 3;
+    return 4;
+  }, [password]);
+
+  const strengthColor = useMemo(() => {
+    switch (passwordStrength) {
+      case 1: return 'bg-error';
+      case 2: return 'bg-warning';
+      case 3: return 'bg-primary';
+      case 4: return 'bg-primary';
+      default: return 'bg-surface-bright';
+    }
+  }, [passwordStrength]);
+
+  const strengthText = useMemo(() => {
+    if (!password) return '';
+    switch (passwordStrength) {
+      case 1: return t('auth.weak');
+      case 2: return t('auth.fair');
+      case 3: return t('auth.good');
+      case 4: return t('auth.strongSecurity');
+      default: return '';
+    }
+  }, [passwordStrength, t, password]);
+
+  const onSubmit = async (data: any) => {
+    if (!isSupabaseConfigured) {
+      setError('Supabase is not configured. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.');
+      return;
+    }
+
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA to proceed.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isLogin) {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+          options: { captchaToken }
+        });
+        if (error) throw error;
+        setView('dashboard');
+      } else {
+        const { data: signUpData, error } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+          options: {
+            captchaToken,
+            data: {
+              full_name: data.fullName,
+            }
+          }
+        });
+        if (error) throw error;
+        
+        // If session is null, it means email confirmation is required
+        if (!signUpData.session) {
+          setSuccess(true);
+        } else {
+          // If session exists, they are logged in (auto-confirm is on)
+          setView('dashboard');
+        }
+      }
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during authentication.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="relative z-10 w-full max-w-7xl mx-auto px-6 py-12 flex flex-col md:flex-row items-stretch gap-12 min-h-[870px] pt-24">
@@ -63,11 +171,34 @@ export function AuthView({ setView }: AuthViewProps) {
             <span className="text-xl font-black tracking-tighter text-on-surface">CollectorCapital</span>
           </div>
           <header className="mb-10">
-            <h2 className="text-3xl font-bold tracking-tight text-on-surface mb-2">{t('auth.createAccount')}</h2>
-            <p className="text-on-surface-variant">{t('auth.secureAccess')}</p>
+            <h2 className="text-3xl font-bold tracking-tight text-on-surface mb-2">
+              {success ? t('auth.successTitle') : (isLogin ? t('auth.signIn') : t('auth.createAccount'))}
+            </h2>
+            <p className="text-on-surface-variant">
+              {success ? t('auth.successMessage') : t('auth.secureAccess')}
+            </p>
           </header>
 
-          <div className="grid grid-cols-2 gap-4 mb-8">
+          {success ? (
+            <div className="space-y-6">
+              <div className="p-6 bg-primary/10 border border-primary/20 rounded-2xl flex flex-col items-center text-center gap-4">
+                <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="w-8 h-8 text-primary" />
+                </div>
+                <p className="text-on-surface font-medium leading-relaxed">
+                  {t('auth.checkEmail')}
+                </p>
+              </div>
+              <button 
+                onClick={() => { setSuccess(false); setIsLogin(true); }}
+                className="w-full py-4 rounded-xl font-bold text-primary border border-primary/30 hover:bg-primary/5 transition-all"
+              >
+                {t('auth.backToLogin')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-2 gap-4 mb-8">
             <button className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-surface-container-high hover:bg-surface-container-highest transition-colors border border-outline-variant/10">
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.92 3.32-2.12 4.4-1.32 1.32-3.4 2.68-6.92 2.68-5.76 0-10.36-4.64-10.36-10.36s4.6-10.36 10.36-10.36c3.12 0 5.4 1.2 7.08 2.84l2.32-2.32c-2.44-2.32-5.64-3.64-9.4-3.64-7.84 0-14.28 6.44-14.28 14.28s6.44 14.28 14.28 14.28c4.24 0 7.44-1.4 9.88-3.92 2.52-2.52 3.32-6.04 3.32-8.76 0-.84-.08-1.44-.16-2.08h-13.04z" fill="#EA4335"></path>
@@ -84,61 +215,119 @@ export function AuthView({ setView }: AuthViewProps) {
 
           <div className="relative flex py-5 items-center mb-4">
             <div className="flex-grow border-t border-outline-variant/15"></div>
-            <span className="flex-shrink mx-4 text-on-surface-variant text-xs font-medium uppercase tracking-widest">{t('auth.orEmail')}</span>
+            <span className="flex-shrink mx-4 text-on-surface-variant text-xs font-medium uppercase tracking-widest">{isLogin ? t('auth.orEmailLogin') : t('auth.orEmail')}</span>
             <div className="flex-grow border-t border-outline-variant/15"></div>
           </div>
 
-          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); setView('dashboard'); }}>
-            <div>
-              <label className="block text-sm font-medium text-on-surface-variant mb-2 ml-1">{t('auth.fullName')}</label>
-              <input className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface" placeholder="Alex Sterling" type="text" />
-            </div>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+            {error && (
+              <div className="p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm">
+                {error}
+              </div>
+            )}
+            
+            {!isLogin && (
+              <div>
+                <label className="block text-sm font-medium text-on-surface-variant mb-2 ml-1">{t('auth.fullName')}</label>
+                <input 
+                  className={`w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface ${errors.fullName ? 'ring-2 ring-error/50' : ''}`} 
+                  placeholder="Alex Sterling" 
+                  type="text" 
+                  {...register('fullName', { required: !isLogin })}
+                />
+                {errors.fullName && <p className="text-error text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">{t('auth.required')}</p>}
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-on-surface-variant mb-2 ml-1">{t('auth.email')}</label>
-              <input className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface" placeholder="alex@collectorcapital.com" type="email" />
+              <input 
+                className={`w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface ${errors.email ? 'ring-2 ring-error/50' : ''}`} 
+                placeholder="alex@collectorcapital.com" 
+                type="email" 
+                {...register('email', { required: true, pattern: /^\S+@\S+$/i })}
+              />
+              {errors.email && <p className="text-error text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">{t('auth.invalidEmail')}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-on-surface-variant mb-2 ml-1">{t('auth.password')}</label>
               <div className="relative">
-                <input className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface pr-12" placeholder="••••••••••••" type="password" />
-                <button className="absolute right-4 top-1/2 -translate-y-1/2 text-outline/60 hover:text-on-surface transition-colors" type="button">
-                  <Eye className="w-5 h-5" />
+                <input 
+                  className={`w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 focus:ring-2 focus:ring-secondary/20 transition-all placeholder:text-outline/50 text-on-surface pr-12 ${errors.password ? 'ring-2 ring-error/50' : ''}`} 
+                  placeholder="••••••••••••" 
+                  type={showPassword ? "text" : "password"} 
+                  {...register('password', { required: true, minLength: 6 })}
+                />
+                <button 
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-outline/60 hover:text-on-surface transition-colors" 
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              <div className="mt-3 flex gap-1.5 px-1">
-                <div className="h-1 flex-1 rounded-full bg-primary"></div>
-                <div className="h-1 flex-1 rounded-full bg-primary"></div>
-                <div className="h-1 flex-1 rounded-full bg-primary"></div>
-                <div className="h-1 flex-1 rounded-full bg-surface-bright"></div>
-              </div>
-              <p className="text-[10px] uppercase tracking-wider font-semibold text-primary mt-2 ml-1">{t('auth.strongSecurity')}</p>
+              {errors.password && <p className="text-error text-[10px] mt-1 ml-1 uppercase tracking-wider font-bold">{t('auth.passwordTooShort')}</p>}
+              {!isLogin && (
+                <>
+                  <div className="mt-3 flex gap-1.5 px-1">
+                    <div className={`h-1 flex-1 rounded-full transition-all duration-500 ${passwordStrength >= 1 ? strengthColor : 'bg-surface-bright'}`}></div>
+                    <div className={`h-1 flex-1 rounded-full transition-all duration-500 ${passwordStrength >= 2 ? strengthColor : 'bg-surface-bright'}`}></div>
+                    <div className={`h-1 flex-1 rounded-full transition-all duration-500 ${passwordStrength >= 3 ? strengthColor : 'bg-surface-bright'}`}></div>
+                    <div className={`h-1 flex-1 rounded-full transition-all duration-500 ${passwordStrength >= 4 ? strengthColor : 'bg-surface-bright'}`}></div>
+                  </div>
+                  <p className={`text-[10px] uppercase tracking-wider font-semibold mt-2 ml-1 transition-colors duration-500 ${passwordStrength >= 1 ? strengthColor.replace('bg-', 'text-') : 'text-primary'}`}>
+                    {strengthText || t('auth.strongSecurity')}
+                  </p>
+                </>
+              )}
             </div>
-            <div className="flex items-start gap-3 px-1">
-              <div className="flex items-center h-5">
-                <input type="checkbox" id="terms" className="w-4 h-4 rounded bg-surface-container-highest border-outline-variant/30 text-primary focus:ring-offset-background focus:ring-primary" />
+            {!isLogin && (
+              <div className="flex items-start gap-3 px-1">
+                <div className="flex items-center h-5">
+                  <input 
+                    type="checkbox" 
+                    id="terms" 
+                    className={`w-4 h-4 rounded bg-surface-container-highest border-outline-variant/30 text-primary focus:ring-offset-background focus:ring-primary ${errors.terms ? 'ring-2 ring-error/50' : ''}`} 
+                    {...register('terms', { required: !isLogin })}
+                  />
+                </div>
+                <label htmlFor="terms" className="text-sm text-on-surface-variant leading-tight">
+                  {t('auth.iAgree')} <a href="#" className="text-secondary hover:underline">{t('auth.terms')}</a> {t('auth.and')} <a href="#" className="text-secondary hover:underline">{t('auth.privacy')}</a>.
+                </label>
               </div>
-              <label htmlFor="terms" className="text-sm text-on-surface-variant leading-tight">
-                {t('auth.iAgree')} <a href="#" className="text-secondary hover:underline">{t('auth.terms')}</a> {t('auth.and')} <a href="#" className="text-secondary hover:underline">{t('auth.privacy')}</a>.
-              </label>
+            )}
+
+            <div className="flex justify-center py-2">
+              <Turnstile 
+                siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACxRmsEjj__pSQit'} 
+                onSuccess={setCaptchaToken}
+                options={{ theme: 'dark' }}
+              />
             </div>
-            <button className="w-full bg-gradient-to-br from-primary to-primary-container py-4 rounded-xl font-bold text-on-primary-container text-lg shadow-xl shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.01] active:scale-[0.98] transition-all" type="submit">
-              {t('auth.createBtn')}
+
+            <button 
+              className="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container py-4 rounded-xl font-bold text-on-primary-container text-lg shadow-xl shadow-primary/10 hover:shadow-primary/20 hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed" 
+              type="submit"
+              disabled={loading || !captchaToken}
+            >
+              {loading && <Loader2 className="w-5 h-5 animate-spin" />}
+              {isLogin ? t('auth.signIn') : t('auth.createBtn')}
             </button>
           </form>
-          <footer className="mt-10 text-center">
-            <p className="text-on-surface-variant text-sm">
-              {t('auth.alreadyHave')} 
-              <a href="#" className="text-primary font-semibold hover:underline ml-1" onClick={(e) => { e.preventDefault(); setView('dashboard'); }}>{t('auth.signIn')}</a>
-            </p>
-          </footer>
+              <footer className="mt-10 text-center">
+                <p className="text-on-surface-variant text-sm">
+                  {isLogin ? t('auth.dontHave') : t('auth.alreadyHave')} 
+                  <button 
+                    className="text-primary font-semibold hover:underline ml-1" 
+                    onClick={() => { setIsLogin(!isLogin); setError(null); }}
+                  >
+                    {isLogin ? t('auth.createAccount') : t('auth.signIn')}
+                  </button>
+                </p>
+              </footer>
+            </>
+          )}
         </div>
       </section>
-
-      {/* Security Badge */}
-      <div className="fixed bottom-8 right-8 hidden lg:flex items-center gap-2 bg-surface-container-high/50 backdrop-blur-md px-4 py-2 rounded-full border border-outline-variant/10">
-        <CheckCircle2 className="text-primary w-5 h-5" />
-        <span className="text-xs font-medium text-on-surface/70 uppercase tracking-widest">{t('auth.encryption')}</span>
-      </div>
     </main>
   )
 }

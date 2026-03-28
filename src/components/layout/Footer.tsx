@@ -1,18 +1,22 @@
-export function Footer() {
+import { useTranslation } from 'react-i18next';
+
+export function Footer({ setView }: { setView: (view: string) => void }) {
+  const { t } = useTranslation();
+  
   return (
     <footer className="bg-surface-container-lowest border-t border-outline-variant/10 py-12 px-8 mt-auto">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-8">
-        <div className="flex flex-col gap-4 max-w-md">
-          <div className="text-sm font-bold text-on-surface">CollectorCapital</div>
+      <div className="w-full flex flex-col md:flex-row justify-between gap-8">
+        <div className="flex flex-col gap-4 max-w-xl lg:max-w-2xl">
+          <div className="text-sm font-bold text-on-surface">Collector Capital</div>
           <p className="text-[11px] uppercase tracking-widest text-on-surface-variant leading-loose">
-            © 2024 Collector Capital Global Markets. All rights reserved. High-risk investment notice: Trading involves significant risk.
+            {t('footer.rights')}
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-          <a href="#" className="text-[11px] uppercase tracking-widest text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">Terms of Service</a>
-          <a href="#" className="text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">Privacy Policy</a>
-          <a href="#" className="text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">Risk Disclosure</a>
-          <a href="#" className="text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">Contact Support</a>
+          <button onClick={() => setView('legal')} className="text-left text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">{t('footer.terms')}</button>
+          <button onClick={() => setView('legal')} className="text-left text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">{t('footer.privacy')}</button>
+          <button onClick={() => setView('legal')} className="text-left text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">{t('footer.risk')}</button>
+          <button onClick={() => setView('support')} className="text-left text-[11px] uppercase tracking-widest text-on-surface-variant hover:text-primary hover:underline decoration-primary underline-offset-4 opacity-80 hover:opacity-100 transition-opacity">{t('footer.contact')}</button>
         </div>
       </div>
     </footer>

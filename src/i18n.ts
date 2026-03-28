@@ -12,7 +12,32 @@ const resources = {
         legal: 'Legal',
         search: 'Search markets...',
         trade: 'Trade',
-        signIn: 'Sign In'
+        signIn: 'Sign In',
+        clientPortal: 'Client Portal',
+        notifications: 'Notifications',
+        noNotifications: 'No notifications yet',
+        settings: 'Settings',
+        profileSettings: 'Profile Settings',
+        myWatchlist: 'My Watchlist'
+      },
+      footer: {
+        rights: '© 2026 Collector Capital Global Markets. All rights reserved. High-risk investment notice: Trading involves significant risk.',
+        terms: 'Terms of Service',
+        privacy: 'Privacy Policy',
+        risk: 'Risk Disclosure',
+        contact: 'Contact Support'
+      },
+      profile: {
+        updateSuccess: 'Profile updated successfully',
+        emailDisabled: 'Email cannot be changed from this panel.',
+        saveChanges: 'Save Changes'
+      },
+      watchlist: {
+        subtitle: 'Strategies you are currently tracking.',
+        emptyTitle: 'Your watchlist is empty',
+        emptyDesc: 'Explore our strategy catalog and bookmark the ones you want to track over time.',
+        add: 'Add to watchlist',
+        remove: 'Remove from watchlist'
       },
       dashboard: {
         heroTitle: 'Algorithmic Precision.',
@@ -22,7 +47,33 @@ const resources = {
         featuredStrategy: 'Featured Strategy',
         institutionalExcellence: 'Institutional Excellence',
         createAccount: 'Create Account',
-        exploreStrategies: 'Explore Strategies'
+        exploreStrategies: 'Explore Strategies',
+        cumulativeGain: 'Cumulative Gain',
+        maxDrawdown: 'Max Drawdown',
+        investors: 'Investors',
+        performanceCurve: 'Performance Curve',
+        performanceHistory: 'Last 12 Months Performance History',
+        strategyCatalog: 'Strategy Catalog',
+        strategyCatalogSubtitle: 'Discover curated portfolios managed by top-tier algorithms and experienced desk traders.',
+        filterAllAssets: 'Filter: All Assets',
+        sortReturn: 'Sort: Return',
+        monthlyReturn: 'Monthly Return',
+        explore: 'Explore',
+        highRisk: 'High Risk',
+        mediumRisk: 'Medium Risk',
+        lowRisk: 'Low Risk',
+        totalReturn: 'Total Return',
+        institutionalExcellenceTitle: 'Institutional Excellence For Every Portfolio',
+        verifiedPerformance: 'Verified Performance',
+        verifiedPerformanceDesc: 'Every track record is audited and verified in real-time. What you see is exactly what our traders achieve.',
+        multiAssetExecution: 'Multi-Asset Execution',
+        multiAssetExecutionDesc: 'Access Forex, Commodities, and Equities through a single unified portal designed for professional clarity.',
+        advancedRiskControls: 'Advanced Risk Controls',
+        advancedRiskControlsDesc: 'Automated drawdown protection and exposure monitoring safeguard your capital across all active strategies.',
+        riskShieldActive: 'Risk Shield Active',
+        riskShieldDesc: 'System-wide drawdown cap set to 15.0%. Your capital is currently managed under "Safe Guard" protocol.',
+        ctaTitle: 'Start Your Architecture of Wealth Today',
+        ctaSubtitle: 'Join thousands of verified investors accessing institutional-grade strategies with zero barriers to entry.'
       },
       strategies: {
         title: 'Investment Strategies',
@@ -32,7 +83,51 @@ const resources = {
         assetType: 'Asset Type',
         returnRange: 'Return Range',
         exploreStrategy: 'Explore Strategy',
-        backToStrategies: 'Back to Strategies'
+        backToStrategies: 'Back to Strategies',
+        allRisks: 'All Risks',
+        low: 'Low',
+        medium: 'Medium',
+        high: 'High',
+        allAssets: 'All Assets',
+        majors: 'Majors',
+        minors: 'Minors',
+        exotics: 'Exotics',
+        anyReturn: 'Any Return',
+        noStrategiesFound: 'No strategies available at the moment.',
+        noFilterResults: 'No strategies match your current filters.',
+        clearFilters: 'Clear Filters',
+        rlsNotice: 'If you have configured RLS, make sure you are signed in.',
+        goToLogin: 'Go to Login',
+        verified: 'Verified',
+        share: 'Share',
+        copied: 'Copied!',
+        addToWatchlist: 'Add to Watchlist',
+        inWatchlist: 'In Watchlist',
+        equityCurve: 'Equity Curve',
+        profitFactor: 'Profit Factor',
+        winRate: 'Win Rate',
+        maxDrawdown: 'Max Drawdown',
+        investors: 'Investors',
+        assetAllocation: 'Asset Allocation',
+        tradingStyle: 'Trading Style',
+        scalpingIntensity: 'Scalping Intensity',
+        avgHoldTime: 'Avg. Hold Time',
+        recentExecutions: 'Recent Executions',
+        symbol: 'Symbol',
+        type: 'Type',
+        lots: 'Lots',
+        openPrice: 'Open Price',
+        profit: 'Profit',
+        investInStrategy: 'Invest in Strategy',
+        investmentAmount: 'Investment Amount',
+        projectedReturns: 'Projected Returns (12M)',
+        estBalance: 'Est. Balance',
+        performanceFee: 'Performance Fee',
+        minimumTerm: 'Minimum Term',
+        totalInvestors: 'Total Investors',
+        confirmInvestment: 'Confirm Investment',
+        riskWarning: 'Past performance is not indicative of future results. Trading involves significant risk of loss.',
+        viewFirmProfile: 'View Firm Profile'
       },
       auth: {
         joinTitle: 'Join the',
@@ -44,10 +139,17 @@ const resources = {
         createAccount: 'Create an Account',
         secureAccess: 'Secure your access to global markets today.',
         orEmail: 'or email register',
+        orEmailLogin: 'or email login',
         fullName: 'Full Name',
         email: 'Email Address',
         password: 'Password',
         strongSecurity: 'Strong Security Score',
+        weak: 'Weak',
+        fair: 'Fair',
+        good: 'Good',
+        required: 'This field is required',
+        invalidEmail: 'Please enter a valid email',
+        passwordTooShort: 'Password must be at least 6 characters',
         iAgree: 'I agree to the',
         terms: 'Terms of Service',
         and: 'and',
@@ -55,7 +157,12 @@ const resources = {
         createBtn: 'Create Account',
         alreadyHave: 'Already have an account?',
         signIn: 'Sign In',
-        encryption: 'AES-256 Encryption Active'
+        successTitle: 'Account Created!',
+        successMessage: "You're almost there.",
+        checkEmail: 'Please check your email inbox to confirm your account and start trading.',
+        backToLogin: 'Back to Sign In',
+        dontHaveAccount: "Don't have an account?",
+        dontHave: "Don't have an account?"
       },
       support: {
         center: 'Support Center',
@@ -74,7 +181,18 @@ const resources = {
         chatResponse: 'Connect instantly with an analyst.',
         startSession: 'Start Session',
         phone: 'Institutional Phone',
-        phoneResponse: 'Dedicated line for high-net-worth.'
+        phoneResponse: 'Dedicated line for high-net-worth.',
+        faq1: {
+          q: "How do I start investing?",
+          a: "Starting your investment journey with Equilibrium Pro is designed to be seamless. First, complete your account registration and identity verification (KYC). Once verified, you can deposit funds via bank transfer or supported digital assets.",
+          b1: "Choose a portfolio strategy that matches your risk profile.",
+          b2: "Set up automated recurring investments to benefit from dollar-cost averaging.",
+          b3: "Monitor performance in real-time via your personalized dashboard."
+        },
+        faq2: { q: "Is my capital guaranteed?", a: "All investments carry risk. We employ strict risk management protocols." },
+        faq3: { q: "What is the minimum deposit?", a: "The minimum deposit is $500 for standard accounts." },
+        faq4: { q: "How are profits distributed?", a: "Profits are distributed monthly directly to your wallet." },
+        faq5: { q: "Is Collector Capital regulated?", a: "Yes, we are fully regulated by the global financial authorities." }
       },
       contact: {
         institutionalAccess: 'Institutional Access',
@@ -95,12 +213,23 @@ const resources = {
         phone: 'Institutional Support Phone',
         phoneResponse: 'Dedicated line for high-net-worth and corporate desks.',
         globalPresence: 'Global Presence',
-        globalSubtitle: 'Our strategic desks operate in the world\'s most vital financial hubs to ensure seamless 24-hour market coverage.'
+        globalSubtitle: 'Our strategic desks operate in the world\'s most vital financial hubs to ensure seamless 24-hour market coverage.',
+        success: 'Message sent successfully. We will contact you soon.',
+        forexSpot: 'Forex Spot & Derivatives',
+        fixedIncome: 'Fixed Income Strategies',
+        algoTrading: 'Algorithmic Trading',
+        portfolioAdvisory: 'Portfolio Advisory',
+        london: 'London',
+        hqDesk: 'HQ & Desk',
+        newYork: 'New York',
+        americasDesk: 'Americas Desk',
+        singapore: 'Singapore',
+        apacDesk: 'APAC Desk'
       },
       legal: {
         regulatoryDoc: 'Regulatory Document',
         title: 'Legal Notice & Disclosure',
-        lastUpdated: 'Last Updated: October 24, 2023',
+        lastUpdated: 'Last Updated: March 24, 2026',
         downloadPdf: 'Download PDF Version',
         riskTitle: '1. Risk Disclosure',
         riskP1: 'Trading foreign exchange (Forex) and other financial instruments on margin carries a high level of risk and may not be suitable for all investors. The high degree of leverage can work against you as well as for you. Before deciding to trade, you should carefully consider your investment objectives, level of experience, and risk appetite.',
@@ -128,14 +257,39 @@ const resources = {
   es: {
     translation: {
       navbar: {
-        dashboard: 'Panel',
+        dashboard: 'Dashboard',
         strategies: 'Estrategias',
         support: 'Soporte',
         contact: 'Contacto',
         legal: 'Legal',
         search: 'Buscar mercados...',
         trade: 'Operar',
-        signIn: 'Iniciar Sesión'
+        signIn: 'Iniciar Sesión',
+        clientPortal: 'Portal de Clientes',
+        notifications: 'Notificaciones',
+        noNotifications: 'No hay notificaciones',
+        settings: 'Configuración',
+        profileSettings: 'Perfil del Usuario',
+        myWatchlist: 'Mi Watchlist'
+      },
+      footer: {
+        rights: '© 2026 Collector Capital Global Markets. Todos los derechos reservados. Aviso de inversión de alto riesgo: Operar implica un riesgo significativo.',
+        terms: 'Términos de Servicio',
+        privacy: 'Política de Privacidad',
+        risk: 'Divulgación de Riesgos',
+        contact: 'Contactar Soporte'
+      },
+      profile: {
+        updateSuccess: 'Perfil actualizado correctamente',
+        emailDisabled: 'El correo electrónico no se puede cambiar desde este panel.',
+        saveChanges: 'Guardar Cambios'
+      },
+      watchlist: {
+        subtitle: 'Estrategias que estás siguiendo actualmente.',
+        emptyTitle: 'Tu watchlist está vacía',
+        emptyDesc: 'Explora nuestro catálogo de estrategias y guarda las que quieras seguir a lo largo del tiempo.',
+        add: 'Añadir a la watchlist',
+        remove: 'Eliminar de la watchlist'
       },
       dashboard: {
         heroTitle: 'Precisión Algorítmica.',
@@ -145,7 +299,33 @@ const resources = {
         featuredStrategy: 'Estrategia Destacada',
         institutionalExcellence: 'Excelencia Institucional',
         createAccount: 'Crear Cuenta',
-        exploreStrategies: 'Explorar Estrategias'
+        exploreStrategies: 'Explorar Estrategias',
+        cumulativeGain: 'Ganancia Acumulada',
+        maxDrawdown: 'Drawdown Máximo',
+        investors: 'Inversores',
+        performanceCurve: 'Curva de Rendimiento',
+        performanceHistory: 'Historial de Rendimiento de los Últimos 12 Meses',
+        strategyCatalog: 'Catálogo de Estrategias',
+        strategyCatalogSubtitle: 'Descubra carteras seleccionadas gestionadas por algoritmos de primer nivel y operadores experimentados.',
+        filterAllAssets: 'Filtro: Todos los Activos',
+        sortReturn: 'Ordenar: Retorno',
+        monthlyReturn: 'Retorno Mensual',
+        explore: 'Explorar',
+        highRisk: 'Riesgo Alto',
+        mediumRisk: 'Riesgo Medio',
+        lowRisk: 'Riesgo Bajo',
+        totalReturn: 'Retorno Total',
+        institutionalExcellenceTitle: 'Excelencia Institucional Para Cada Cartera',
+        verifiedPerformance: 'Rendimiento Verificado',
+        verifiedPerformanceDesc: 'Cada historial es auditado y verificado en tiempo real. Lo que ve es exactamente lo que logran nuestros operadores.',
+        multiAssetExecution: 'Ejecución Multi-Activo',
+        multiAssetExecutionDesc: 'Acceda a Forex, Materias Primas y Acciones a través de un único portal unificado diseñado para la claridad profesional.',
+        advancedRiskControls: 'Controles de Riesgo Avanzados',
+        advancedRiskControlsDesc: 'La protección automatizada contra drawdowns y el monitoreo de exposición salvaguardan su capital en todas las estrategias activas.',
+        riskShieldActive: 'Escudo de Riesgo Activo',
+        riskShieldDesc: 'Límite de drawdown en todo el sistema establecido en 15.0%. Su capital está actualmente gestionado bajo el protocolo "Safe Guard".',
+        ctaTitle: 'Comience su Arquitectura de Riqueza Hoy',
+        ctaSubtitle: 'Únase a miles de inversores verificados que acceden a estrategias de grado institucional sin barreras de entrada.'
       },
       strategies: {
         title: 'Estrategias de Inversión',
@@ -155,7 +335,51 @@ const resources = {
         assetType: 'Tipo de Activo',
         returnRange: 'Rango de Retorno',
         exploreStrategy: 'Explorar Estrategia',
-        backToStrategies: 'Volver a Estrategias'
+        backToStrategies: 'Volver a Estrategias',
+        allRisks: 'Todos los Riesgos',
+        low: 'Bajo',
+        medium: 'Medio',
+        high: 'Alto',
+        allAssets: 'Todos los Activos',
+        majors: 'Mayores',
+        minors: 'Menores',
+        exotics: 'Exóticos',
+        anyReturn: 'Cualquier Retorno',
+        noStrategiesFound: 'No hay estrategias disponibles en este momento.',
+        noFilterResults: 'Ninguna estrategia coincide con tus filtros.',
+        clearFilters: 'Limpiar Filtros',
+        rlsNotice: 'Si has configurado RLS, asegúrate de haber iniciado sesión.',
+        goToLogin: 'Ir al Login',
+        verified: 'Verificado',
+        share: 'Compartir',
+        copied: '¡Copiado!',
+        addToWatchlist: 'Añadir a Seguimiento',
+        inWatchlist: 'En Seguimiento',
+        equityCurve: 'Curva de Equidad',
+        profitFactor: 'Factor de Beneficio',
+        winRate: 'Tasa de Éxito',
+        maxDrawdown: 'Drawdown Máximo',
+        investors: 'Inversores',
+        assetAllocation: 'Asignación de Activos',
+        tradingStyle: 'Estilo de Trading',
+        scalpingIntensity: 'Intensidad de Scalping',
+        avgHoldTime: 'Tiempo Promedio de Retención',
+        recentExecutions: 'Ejecuciones Recientes',
+        symbol: 'Símbolo',
+        type: 'Tipo',
+        lots: 'Lotes',
+        openPrice: 'Precio de Apertura',
+        profit: 'Beneficio',
+        investInStrategy: 'Invertir en Estrategia',
+        investmentAmount: 'Monto de Inversión',
+        projectedReturns: 'Retornos Proyectados (12M)',
+        estBalance: 'Balance Est.',
+        performanceFee: 'Comisión de Rendimiento',
+        minimumTerm: 'Plazo Mínimo',
+        totalInvestors: 'Inversores Totales',
+        confirmInvestment: 'Confirmar Inversión',
+        riskWarning: 'El rendimiento pasado no es indicativo de resultados futuros. El trading implica un riesgo significativo de pérdida.',
+        viewFirmProfile: 'Ver Perfil de la Firma'
       },
       auth: {
         joinTitle: 'Únete a la',
@@ -167,10 +391,17 @@ const resources = {
         createAccount: 'Crear una Cuenta',
         secureAccess: 'Asegura tu acceso a los mercados globales hoy.',
         orEmail: 'o regístrate por correo',
+        orEmailLogin: 'o inicia sesión por correo',
         fullName: 'Nombre Completo',
         email: 'Dirección de Correo',
         password: 'Contraseña',
         strongSecurity: 'Puntuación de Seguridad Fuerte',
+        weak: 'Débil',
+        fair: 'Aceptable',
+        good: 'Buena',
+        required: 'Este campo es obligatorio',
+        invalidEmail: 'Por favor, introduce un correo válido',
+        passwordTooShort: 'La contraseña debe tener al menos 6 caracteres',
         iAgree: 'Acepto los',
         terms: 'Términos de Servicio',
         and: 'y la',
@@ -178,7 +409,12 @@ const resources = {
         createBtn: 'Crear Cuenta',
         alreadyHave: '¿Ya tienes una cuenta?',
         signIn: 'Iniciar Sesión',
-        encryption: 'Cifrado AES-256 Activo'
+        successTitle: '¡Cuenta Creada!',
+        successMessage: 'Ya casi estás ahí.',
+        checkEmail: 'Por favor, revisa tu bandeja de entrada para confirmar tu cuenta y empezar a operar.',
+        backToLogin: 'Volver al Inicio de Sesión',
+        dontHaveAccount: "¿No tienes una cuenta?",
+        dontHave: "¿No tienes una cuenta?"
       },
       support: {
         center: 'Centro de Soporte',
@@ -197,7 +433,18 @@ const resources = {
         chatResponse: 'Conéctate al instante con un analista.',
         startSession: 'Iniciar Sesión',
         phone: 'Teléfono Institucional',
-        phoneResponse: 'Línea dedicada para altos patrimonios.'
+        phoneResponse: 'Línea dedicada para altos patrimonios.',
+        faq1: {
+          q: "¿Cómo empiezo a invertir?",
+          a: "Comenzar su viaje de inversión con Equilibrium Pro está diseñado para ser fluido. Primero, complete el registro de su cuenta y la verificación de identidad (KYC). Una vez verificado, puede depositar fondos mediante transferencia bancaria o activos digitales compatibles.",
+          b1: "Elija una estrategia de cartera que coincida con su perfil de riesgo.",
+          b2: "Configure inversiones recurrentes automatizadas para beneficiarse del promedio de costo en dólares.",
+          b3: "Monitoree el rendimiento en tiempo real a través de su panel personalizado."
+        },
+        faq2: { q: "¿Está garantizado mi capital?", a: "Todas las inversiones conllevan riesgos. Empleamos estrictos protocolos de gestión de riesgos." },
+        faq3: { q: "¿Cuál es el depósito mínimo?", a: "El depósito mínimo es de $500 para cuentas estándar." },
+        faq4: { q: "¿Cómo se distribuyen los beneficios?", a: "Los beneficios se distribuyen mensualmente directamente a su billetera." },
+        faq5: { q: "¿Está regulado Collector Capital?", a: "Sí, estamos totalmente regulados por las autoridades financieras globales." }
       },
       contact: {
         institutionalAccess: 'Acceso Institucional',
@@ -218,12 +465,23 @@ const resources = {
         phone: 'Teléfono de Soporte Institucional',
         phoneResponse: 'Línea dedicada para altos patrimonios y mesas corporativas.',
         globalPresence: 'Presencia Global',
-        globalSubtitle: 'Nuestras mesas estratégicas operan en los centros financieros más vitales del mundo para garantizar una cobertura de mercado ininterrumpida las 24 horas.'
+        globalSubtitle: 'Nuestras mesas estratégicas operan en los centros financieros más vitales del mundo para garantizar una cobertura de mercado ininterrumpida las 24 horas.',
+        success: 'Mensaje enviado con éxito. Nos pondremos en contacto pronto.',
+        forexSpot: 'Forex Spot y Derivados',
+        fixedIncome: 'Estrategias de Renta Fija',
+        algoTrading: 'Trading Algorítmico',
+        portfolioAdvisory: 'Asesoría de Cartera',
+        london: 'Londres',
+        hqDesk: 'Sede y Mesa',
+        newYork: 'Nueva York',
+        americasDesk: 'Mesa de Américas',
+        singapore: 'Singapur',
+        apacDesk: 'Mesa APAC'
       },
       legal: {
         regulatoryDoc: 'Documento Regulatorio',
         title: 'Aviso Legal y Divulgación',
-        lastUpdated: 'Última Actualización: 24 de Octubre, 2023',
+        lastUpdated: 'Última Actualización: 24 de Marzo, 2026',
         downloadPdf: 'Descargar Versión PDF',
         riskTitle: '1. Divulgación de Riesgos',
         riskP1: 'Operar en divisas (Forex) y otros instrumentos financieros con margen conlleva un alto nivel de riesgo y puede no ser adecuado para todos los inversores. El alto grado de apalancamiento puede trabajar tanto en su contra como a su favor. Antes de decidir operar, debe considerar cuidadosamente sus objetivos de inversión, nivel de experiencia y apetito por el riesgo.',
@@ -250,11 +508,19 @@ const resources = {
   }
 };
 
+const getBrowserLanguage = () => {
+  const browserLang = navigator.language || (navigator as any).userLanguage;
+  if (!browserLang) return 'en';
+  
+  const shortLang = browserLang.split('-')[0].toLowerCase();
+  return shortLang === 'es' ? 'es' : 'en';
+};
+
 i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: 'en', // default language
+    lng: getBrowserLanguage(), // default language based on browser
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false // react already safes from xss

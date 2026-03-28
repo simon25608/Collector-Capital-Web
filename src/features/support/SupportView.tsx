@@ -13,18 +13,18 @@ export function SupportView({ onNavigate }: SupportViewProps) {
 
   const faqs = [
     {
-      q: "How do I start investing?",
-      a: "Starting your investment journey with Equilibrium Pro is designed to be seamless. First, complete your account registration and identity verification (KYC). Once verified, you can deposit funds via bank transfer or supported digital assets.",
+      q: t('support.faq1.q'),
+      a: t('support.faq1.a'),
       bullets: [
-        "Choose a portfolio strategy that matches your risk profile.",
-        "Set up automated recurring investments to benefit from dollar-cost averaging.",
-        "Monitor performance in real-time via your personalized dashboard."
+        t('support.faq1.b1'),
+        t('support.faq1.b2'),
+        t('support.faq1.b3')
       ]
     },
-    { q: "Is my capital guaranteed?", a: "All investments carry risk. We employ strict risk management protocols." },
-    { q: "What is the minimum deposit?", a: "The minimum deposit is $500 for standard accounts." },
-    { q: "How are profits distributed?", a: "Profits are distributed monthly directly to your wallet." },
-    { q: "Is Collector Capital regulated?", a: "Yes, we are fully regulated by the global financial authorities." },
+    { q: t('support.faq2.q'), a: t('support.faq2.a') },
+    { q: t('support.faq3.q'), a: t('support.faq3.a') },
+    { q: t('support.faq4.q'), a: t('support.faq4.a') },
+    { q: t('support.faq5.q'), a: t('support.faq5.a') },
   ]
 
   return (

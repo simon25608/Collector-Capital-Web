@@ -1,12 +1,72 @@
-import { TrendingUp, Globe, Zap, Landmark, Monitor, Droplet, ShieldCheck, Layers, Shield } from "lucide-react"
+import { TrendingUp, Globe, Zap, Landmark, Monitor, Droplet, ShieldCheck, Layers, Shield, Loader2 } from "lucide-react"
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
 interface DashboardViewProps {
-  onNavigate: (view: string) => void;
+  onNavigate: (view: string, id?: string) => void;
+}
+
+interface Strategy {
+  id: string;
+  name: string;
+  monthly_return: number;
+  win_rate: number;
+  drawdown: number;
+  profit_factor: number;
+  investors: number;
+  aum: string;
+  chart_data: any;
+  is_featured: boolean;
 }
 
 export function DashboardView({ onNavigate }: DashboardViewProps) {
   const { t } = useTranslation();
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [featuredStrategy, setFeaturedStrategy] = useState<Strategy | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        // Fetch strategies for catalog
+        const { data: strategiesData, error: strategiesError } = await supabase
+          .from('trading_strategies')
+          .select('*')
+          .order('monthly_return', { ascending: false })
+          .limit(6);
+
+        if (strategiesError) throw strategiesError;
+        if (strategiesData) setStrategies(strategiesData);
+
+        // Fetch featured strategy
+        const { data: featuredData, error: featuredError } = await supabase
+          .from('trading_strategies')
+          .select('*')
+          .eq('is_featured', true)
+          .maybeSingle();
+
+        if (featuredError) throw featuredError;
+        if (featuredData) {
+          setFeaturedStrategy(featuredData);
+        } else if (strategiesData && strategiesData.length > 0) {
+          // Fallback to the best performing one if none is marked as featured
+          setFeaturedStrategy(strategiesData[0]);
+        }
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   return (
     <main className="min-h-screen">
@@ -20,34 +80,34 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">{t('dashboard.featuredStrategy')}</span>
             </div>
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-on-surface leading-[1.1]">
-              {t('dashboard.heroTitle')} <span className="text-primary">Strategy</span>
+              {featuredStrategy?.name || t('dashboard.heroTitle')} <span className="text-primary">Strategy</span>
             </h1>
             <p className="text-lg text-on-surface-variant max-w-xl leading-relaxed">
               {t('dashboard.heroSubtitle')}
             </p>
             <div className="flex flex-wrap gap-12 pt-4">
               <div>
-                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Cumulative Gain</p>
-                <p className="text-4xl font-bold text-primary">+142.50%</p>
+                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.cumulativeGain')}</p>
+                <p className="text-4xl font-bold text-primary">+{featuredStrategy?.monthly_return.toFixed(2) || '142.50'}%</p>
               </div>
               <div>
-                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Max Drawdown</p>
-                <p className="text-4xl font-bold text-tertiary">-8.4%</p>
+                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.maxDrawdown')}</p>
+                <p className="text-4xl font-bold text-tertiary">-{featuredStrategy?.drawdown.toFixed(1) || '8.4'}%</p>
               </div>
               <div>
-                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Investors</p>
-                <p className="text-4xl font-bold text-on-surface">1,248</p>
+                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.investors')}</p>
+                <p className="text-4xl font-bold text-on-surface">{featuredStrategy?.investors.toLocaleString() || '1,248'}</p>
               </div>
             </div>
             <div className="flex items-center gap-6 pt-6">
               <button 
-                onClick={() => onNavigate('strategy-detail')}
+                onClick={() => onNavigate('strategy-detail', featuredStrategy?.id || 'static-1')}
                 className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
               >
                 {t('dashboard.investNow')}
               </button>
               <button 
-                onClick={() => onNavigate('strategy-detail')}
+                onClick={() => onNavigate('strategy-detail', featuredStrategy?.id || 'static-1')}
                 className="bg-surface-container-highest text-on-surface px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest hover:bg-surface-bright transition-colors"
               >
                 {t('dashboard.viewLedger')}
@@ -60,8 +120,8 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 <TrendingUp className="text-primary/40 w-16 h-16" />
               </div>
               <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-2">Performance Curve</h3>
-                <p className="text-sm text-on-surface-variant">Last 12 Months Performance History</p>
+                <h3 className="text-xl font-semibold mb-2">{t('dashboard.performanceCurve')}</h3>
+                <p className="text-sm text-on-surface-variant">{t('dashboard.performanceHistory')}</p>
               </div>
               <div className="h-64 flex items-end gap-2">
                 <div className="w-full bg-surface-container-low h-[20%] rounded-t-sm"></div>
@@ -83,153 +143,97 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
             <div>
-              <h2 className="text-3xl font-bold mb-4">Strategy Catalog</h2>
-              <p className="text-on-surface-variant max-w-md">Discover curated portfolios managed by top-tier algorithms and experienced desk traders.</p>
+              <h2 className="text-3xl font-bold mb-4">{t('dashboard.strategyCatalog')}</h2>
+              <p className="text-on-surface-variant max-w-md">{t('dashboard.strategyCatalogSubtitle')}</p>
             </div>
             <div className="flex gap-4">
-              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-sm font-medium border border-outline-variant/10 hover:bg-surface-container-highest transition-colors">Filter: All Assets</button>
-              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-sm font-medium border border-outline-variant/10 hover:bg-surface-container-highest transition-colors">Sort: Return</button>
+              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-sm font-medium border border-outline-variant/10 hover:bg-surface-container-highest transition-colors">{t('dashboard.filterAllAssets')}</button>
+              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-sm font-medium border border-outline-variant/10 hover:bg-surface-container-highest transition-colors">{t('dashboard.sortReturn')}</button>
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Strategy Card 1 */}
-            <div onClick={() => onNavigate('strategy-detail')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Alpha Momentum</h4>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">Medium Risk</span>
-                </div>
-                <div className="bg-surface-container-highest p-2 rounded-lg">
-                  <TrendingUp className="text-secondary w-5 h-5" />
-                </div>
+            {loading ? (
+              <div className="col-span-full flex justify-center py-12">
+                <Loader2 className="w-8 h-8 text-primary animate-spin" />
               </div>
-              <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                <img alt="Alpha Momentum Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWLeAdXhicGod-KaHisf8hyv9ufCBld7ZIoJkKfJOKEbYZUJYKoGpSqp4GnWdCrZeX_WfjjQgueGanuhlCU2hhe8mDJuAx0Yl8V7J-n64ckj_bKvGJYgs-x76UcK6xnSLPimkMES4O091nF8dMFFWYztEAaS2txWIEfp8YTtCqgqVG2MpphHQCG5ny6mc2wmHK5-37tT5grFSdYwI2yjT1gMCR_yhvxbaM9RxtbhAapIXkH2QiKhQrYSJpEbVqqWVyzMZwYdfGmGI"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
-                  <p className="text-2xl font-bold text-primary">+42.18%</p>
+            ) : strategies.length > 0 ? (
+              strategies.map((strategy) => (
+                <div key={strategy.id} onClick={() => onNavigate('strategy-detail', strategy.id)} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h4 className="text-lg font-bold group-hover:text-primary transition-colors">{strategy.name}</h4>
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
+                        {strategy.drawdown > 15 ? t('dashboard.highRisk') : strategy.drawdown > 8 ? t('dashboard.mediumRisk') : t('dashboard.lowRisk')}
+                      </span>
+                    </div>
+                    <div className="bg-surface-container-highest p-2 rounded-lg">
+                      <TrendingUp className="text-secondary w-5 h-5" />
+                    </div>
+                  </div>
+                  <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
+                    {/* Placeholder for dynamic chart, using static image for MVP */}
+                    <img alt={`${strategy.name} Chart`} className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWLeAdXhicGod-KaHisf8hyv9ufCBld7ZIoJkKfJOKEbYZUJYKoGpSqp4GnWdCrZeX_WfjjQgueGanuhlCU2hhe8mDJuAx0Yl8V7J-n64ckj_bKvGJYgs-x76UcK6xnSLPimkMES4O091nF8dMFFWYztEAaS2txWIEfp8YTtCqgqVG2MpphHQCG5ny6mc2wmHK5-37tT5grFSdYwI2yjT1gMCR_yhvxbaM9RxtbhAapIXkH2QiKhQrYSJpEbVqqWVyzMZwYdfGmGI"/>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.monthlyReturn')}</p>
+                      <p className="text-2xl font-bold text-primary">+{strategy.monthly_return.toFixed(2)}%</p>
+                    </div>
+                    <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
+                  </div>
                 </div>
-                <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
-              </div>
-            </div>
-
-            {/* Strategy Card 2 */}
-            <div onClick={() => onNavigate('strategy-detail')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Global Macro</h4>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">Low Risk</span>
+              ))
+            ) : (
+              // Fallback static cards if no database connection
+              <>
+                {/* Strategy Card 1 */}
+                <div onClick={() => onNavigate('strategy-detail', 'static-1')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Alpha Momentum</h4>
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">{t('dashboard.mediumRisk')}</span>
+                    </div>
+                    <div className="bg-surface-container-highest p-2 rounded-lg">
+                      <TrendingUp className="text-secondary w-5 h-5" />
+                    </div>
+                  </div>
+                  <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
+                    <img alt="Alpha Momentum Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWLeAdXhicGod-KaHisf8hyv9ufCBld7ZIoJkKfJOKEbYZUJYKoGpSqp4GnWdCrZeX_WfjjQgueGanuhlCU2hhe8mDJuAx0Yl8V7J-n64ckj_bKvGJYgs-x76UcK6xnSLPimkMES4O091nF8dMFFWYztEAaS2txWIEfp8YTtCqgqVG2MpphHQCG5ny6mc2wmHK5-37tT5grFSdYwI2yjT1gMCR_yhvxbaM9RxtbhAapIXkH2QiKhQrYSJpEbVqqWVyzMZwYdfGmGI"/>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
+                      <p className="text-2xl font-bold text-primary">+42.18%</p>
+                    </div>
+                    <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
+                  </div>
                 </div>
-                <div className="bg-surface-container-highest p-2 rounded-lg">
-                  <Globe className="text-secondary w-5 h-5" />
+                
+                {/* Strategy Card 2 */}
+                <div onClick={() => onNavigate('strategy-detail', 'static-2')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Global Macro</h4>
+                      <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">{t('dashboard.lowRisk')}</span>
+                    </div>
+                    <div className="bg-surface-container-highest p-2 rounded-lg">
+                      <Globe className="text-secondary w-5 h-5" />
+                    </div>
+                  </div>
+                  <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
+                    <img alt="Global Macro Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxbOF3QXsNfAN5E0Bz4MAZ4gyppZe2COUTXszlp6TOXjCoB3DoHdS-Bte7A8brxWewJp4JtKyTU27YYcLtCMzKe1FU5f8RwJyE957L6_MgMXJsmoiEAWwOiN-MMRGXahw-okGaz_QWmzUJRBNOLFPfhKPKzMGIwStxobP9ll_ahzv3Jh7NfJFA5ylhD92C5qdOAoSxGU6WEKEF4LunWVi_ciug1-sIlPZVQWvnO-plVwSoNbMhE87YpM5eeIunH6-Xc9yhiTSOfUE"/>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.totalReturn')}</p>
+                      <p className="text-2xl font-bold text-primary">+12.40%</p>
+                    </div>
+                    <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">{t('dashboard.explore')}</button>
+                  </div>
                 </div>
-              </div>
-              <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                <img alt="Global Macro Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxbOF3QXsNfAN5E0Bz4MAZ4gyppZe2COUTXszlp6TOXjCoB3DoHdS-Bte7A8brxWewJp4JtKyTU27YYcLtCMzKe1FU5f8RwJyE957L6_MgMXJsmoiEAWwOiN-MMRGXahw-okGaz_QWmzUJRBNOLFPfhKPKzMGIwStxobP9ll_ahzv3Jh7NfJFA5ylhD92C5qdOAoSxGU6WEKEF4LunWVi_ciug1-sIlPZVQWvnO-plVwSoNbMhE87YpM5eeIunH6-Xc9yhiTSOfUE"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
-                  <p className="text-2xl font-bold text-primary">+12.40%</p>
-                </div>
-                <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
-              </div>
-            </div>
-
-            {/* Strategy Card 3 */}
-            <div onClick={() => onNavigate('strategy-detail')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Eurusd Scalper</h4>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">High Risk</span>
-                </div>
-                <div className="bg-surface-container-highest p-2 rounded-lg">
-                  <Zap className="text-secondary w-5 h-5" />
-                </div>
-              </div>
-              <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                <img alt="Eurusd Scalper Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlHVbB1TU1VsPTV9zLu9qi6Ke5SvKkmXFUWmc0JY-CA63ZeXwL_BI4-jvOsAe737xj_1T2ETkfLPjenuMQMGxbdM7Vd3I57YyaQjLziaaA9mzCCA6E5DuDOh0vlbaDFAJluG8L_0Yg8YuZRZH9Rje6-vzjzD3dU-Ecd6I7M42mL7TcCVtzVpuv5FvZljHfEgNLfwQ1DqUVoheSfmPDRAWkBpoqmnEKIDkaPBUOF3LDMLB6-VzIIDomECTfUrF3rFDjSDqWgGVAJ70"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
-                  <p className="text-2xl font-bold text-primary">+89.33%</p>
-                </div>
-                <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
-              </div>
-            </div>
-
-            {/* Strategy Card 4 */}
-            <div onClick={() => onNavigate('strategy-detail')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Yen Carry Master</h4>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">Medium Risk</span>
-                </div>
-                <div className="bg-surface-container-highest p-2 rounded-lg">
-                  <Landmark className="text-secondary w-5 h-5" />
-                </div>
-              </div>
-              <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                <img alt="Yen Carry Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3dk5KQTaDgwpxXDdunCCAxqDPL6iyFhl0TabIzJdDxv54nl4zDPTQjWIoInSXHP8zxkcdEGDb147zH8TMOiyPBLgr7nWaVhiaFPH22gyxP3MQVOztg9s3t8NQFlhYnwEpo73tcX9rr1GyCQyv98c5gv95i4d3Okock_aVWThC2xhbYKNgoIeWCUSeipZyqxPO86jnHmPxttw8lzKPeWtV1j-2h8Pxd0rb_ouF6BeBU2cFpRVNJM_GqR9xQUKgid3UVE1LOEeECYc"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
-                  <p className="text-2xl font-bold text-primary">+34.10%</p>
-                </div>
-                <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
-              </div>
-            </div>
-
-            {/* Strategy Card 5 */}
-            <div onClick={() => onNavigate('strategy-detail')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Tech Basket</h4>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">Medium Risk</span>
-                </div>
-                <div className="bg-surface-container-highest p-2 rounded-lg">
-                  <Monitor className="text-secondary w-5 h-5" />
-                </div>
-              </div>
-              <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                <img alt="Tech Basket Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDj37gQMmVwV_OIStXmiYHz4MHLX6khqSOcmMgthA4BcisOJRZD3bvCXoU4DhqnnKtCwf8cAN3lPcMWcV777YKtYUDvd_q7ST5ZwbrCfIsb2yROA9_kwlUGN01OmFDo0ZgKqNsj02laMlmhgV_VJtNyPDnhS1yiHOk2HnWW8ajbRR5bwxs39Lq6_BY60eoullAiIXiiQnY4xU3uZnER8EqYLQYq7-HJBR_mLoLtW8QDj7xjRGW7F7npdf6N2LLaY2iECvQA8hP9TJU"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
-                  <p className="text-2xl font-bold text-primary">+28.55%</p>
-                </div>
-                <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
-              </div>
-            </div>
-
-            {/* Strategy Card 6 */}
-            <div onClick={() => onNavigate('strategy-detail')} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
-              <div className="flex justify-between items-start mb-6">
-                <div>
-                  <h4 className="text-lg font-bold group-hover:text-primary transition-colors">Commodity Peak</h4>
-                  <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">High Risk</span>
-                </div>
-                <div className="bg-surface-container-highest p-2 rounded-lg">
-                  <Droplet className="text-secondary w-5 h-5" />
-                </div>
-              </div>
-              <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                <img alt="Commodity Peak Chart" className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbjUaCbpdBhl9FBqpkerENfcw7mfS4iq7RQka0F61fWlw9di-xmnVRn7Gnsdbjkiyr6Btl_UrqR6UhJ-MMfkGT2AhPvUVblx0CWhqq-k14E25Yz0eK-zaUgJ8gGEtmHz7gBW4LVRIDMzpO07L-6aOoGj7I5C0lA9mBYtzUFhXgKrp1c5g2j2lI2T4Tpx8HHF-sASuaJoTWcjg5wyzWzcV7_EBTc1QmBxcB6OPyXMFa1R0ilMQCsqoy0_GdmXZeqtyCm2xEhIJ7TLM"/>
-              </div>
-              <div className="flex justify-between items-end">
-                <div>
-                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">Total Return</p>
-                  <p className="text-2xl font-bold text-primary">+56.12%</p>
-                </div>
-                <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
-              </div>
-            </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -240,15 +244,15 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
             <div>
-              <h2 className="text-4xl font-bold mb-8 leading-tight">Institutional Excellence <br/>For Every <span className="text-secondary">Portfolio</span></h2>
+              <h2 className="text-4xl font-bold mb-8 leading-tight">{t('dashboard.institutionalExcellenceTitle')}</h2>
               <div className="space-y-12">
                 <div className="flex gap-6">
                   <div className="bg-surface-container-high w-14 h-14 rounded-xl flex items-center justify-center shrink-0 border border-outline-variant/10">
                     <ShieldCheck className="text-primary w-8 h-8" />
                   </div>
                   <div>
-                    <h4 className="text-xl font-semibold mb-2">Verified Performance</h4>
-                    <p className="text-on-surface-variant">Every track record is audited and verified in real-time. What you see is exactly what our traders achieve.</p>
+                    <h4 className="text-xl font-semibold mb-2">{t('dashboard.verifiedPerformance')}</h4>
+                    <p className="text-on-surface-variant">{t('dashboard.verifiedPerformanceDesc')}</p>
                   </div>
                 </div>
                 
@@ -257,8 +261,8 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     <Layers className="text-primary w-8 h-8" />
                   </div>
                   <div>
-                    <h4 className="text-xl font-semibold mb-2">Multi-Asset Execution</h4>
-                    <p className="text-on-surface-variant">Access Forex, Commodities, and Equities through a single unified portal designed for professional clarity.</p>
+                    <h4 className="text-xl font-semibold mb-2">{t('dashboard.multiAssetExecution')}</h4>
+                    <p className="text-on-surface-variant">{t('dashboard.multiAssetExecutionDesc')}</p>
                   </div>
                 </div>
                 
@@ -267,8 +271,8 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     <Shield className="text-primary w-8 h-8" />
                   </div>
                   <div>
-                    <h4 className="text-xl font-semibold mb-2">Advanced Risk Controls</h4>
-                    <p className="text-on-surface-variant">Automated drawdown protection and exposure monitoring safeguard your capital across all active strategies.</p>
+                    <h4 className="text-xl font-semibold mb-2">{t('dashboard.advancedRiskControls')}</h4>
+                    <p className="text-on-surface-variant">{t('dashboard.advancedRiskControlsDesc')}</p>
                   </div>
                 </div>
               </div>
@@ -285,9 +289,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   <div className="bg-primary/20 p-2 rounded-lg">
                     <Shield className="text-primary w-5 h-5" />
                   </div>
-                  <p className="font-bold text-sm">Risk Shield Active</p>
+                  <p className="font-bold text-sm">{t('dashboard.riskShieldActive')}</p>
                 </div>
-                <p className="text-xs text-on-surface-variant leading-relaxed">System-wide drawdown cap set to 15.0%. Your capital is currently managed under "Safe Guard" protocol.</p>
+                <p className="text-xs text-on-surface-variant leading-relaxed">{t('dashboard.riskShieldDesc')}</p>
               </div>
             </div>
           </div>
@@ -299,20 +303,20 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         <div className="max-w-7xl mx-auto">
           <div className="bg-surface-container-highest rounded-3xl p-12 lg:p-24 text-center relative overflow-hidden border border-outline-variant/10">
             <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none" style={{ background: 'linear-gradient(135deg, #10b981 0%, transparent 50%, #0566d9 100%)' }}></div>
-            <h2 className="text-4xl lg:text-6xl font-bold mb-8 relative z-10">Start Your Architecture of <br/><span className="text-primary">Wealth Today</span></h2>
-            <p className="text-on-surface-variant max-w-2xl mx-auto mb-12 text-lg relative z-10">Join thousands of verified investors accessing institutional-grade strategies with zero barriers to entry.</p>
+            <h2 className="text-4xl lg:text-6xl font-bold mb-8 relative z-10">{t('dashboard.ctaTitle')}</h2>
+            <p className="text-on-surface-variant max-w-2xl mx-auto mb-12 text-lg relative z-10">{t('dashboard.ctaSubtitle')}</p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
               <button 
                 onClick={() => onNavigate('auth')}
                 className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-12 py-5 rounded-lg font-bold text-lg uppercase tracking-widest shadow-2xl shadow-primary/20 hover:scale-[1.05] transition-transform"
               >
-                Create Account
+                {t('dashboard.createAccount')}
               </button>
               <button 
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => onNavigate('strategies')}
                 className="bg-surface-bright text-on-surface border border-outline-variant/20 px-12 py-5 rounded-lg font-bold text-lg uppercase tracking-widest hover:bg-surface-container-highest transition-colors"
               >
-                Explore Strategies
+                {t('dashboard.exploreStrategies')}
               </button>
             </div>
           </div>

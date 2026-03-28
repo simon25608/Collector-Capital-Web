@@ -1,10 +1,57 @@
-import { Mail, MessageSquare, Phone } from "lucide-react"
+import { Mail, MessageSquare, Phone, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export function ContactView() {
   const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA to proceed.');
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    const formData = new FormData(e.currentTarget);
+    const data = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      subject: formData.get('subject'),
+      message: formData.get('message'),
+    };
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to send message');
+      }
+
+      setSuccess(true);
+      (e.target as HTMLFormElement).reset();
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while sending your message.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="pt-24 pb-12">
@@ -26,35 +73,59 @@ export function ContactView() {
           {/* Contact Form */}
           <div className="bg-surface-container-low p-8 md:p-12 rounded-xl shadow-2xl">
             <h2 className="text-2xl font-semibold mb-8">{t('contact.directInquiry')}</h2>
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
+              {success && (
+                <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3 text-primary">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span className="text-sm font-medium">{t('contact.success')}</span>
+                </div>
+              )}
+              {error && (
+                <div className="p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm">
+                  {error}
+                </div>
+              )}
+              
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.fullName')}</label>
-                  <Input placeholder="John Doe" type="text" />
+                  <Input name="name" placeholder="John Doe" type="text" required />
                 </div>
                 <div className="space-y-2">
                   <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.email')}</label>
-                  <Input placeholder="john@institutional.com" type="email" />
+                  <Input name="email" placeholder="john@institutional.com" type="email" required />
                 </div>
               </div>
               <div className="space-y-2">
                 <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.strategyInterest')}</label>
-                <select className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none">
-                  <option>Forex Spot & Derivatives</option>
-                  <option>Fixed Income Strategies</option>
-                  <option>Algorithmic Trading</option>
-                  <option>Portfolio Advisory</option>
+                <select name="subject" required className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none">
+                  <option>{t('contact.forexSpot')}</option>
+                  <option>{t('contact.fixedIncome')}</option>
+                  <option>{t('contact.algoTrading')}</option>
+                  <option>{t('contact.portfolioAdvisory')}</option>
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.message')}</label>
                 <textarea 
+                  name="message"
+                  required
                   className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all" 
                   placeholder={t('contact.messagePlaceholder')} 
                   rows={4}
                 ></textarea>
               </div>
-              <Button className="w-full py-4 text-sm tracking-widest uppercase" type="submit">
+              
+              <div className="flex justify-center py-2">
+                <Turnstile 
+                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACxRmsEjj__pSQit'} 
+                  onSuccess={setCaptchaToken}
+                  options={{ theme: 'dark' }}
+                />
+              </div>
+
+              <Button className="w-full py-4 text-sm tracking-widest uppercase flex items-center justify-center gap-2" type="submit" disabled={loading || !captchaToken}>
+                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t('contact.submit')}
               </Button>
             </form>

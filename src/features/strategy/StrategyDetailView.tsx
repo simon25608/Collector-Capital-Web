@@ -1,15 +1,144 @@
-import { Share, Bookmark, BadgeCheck, Landmark, ArrowLeft } from "lucide-react"
+import { Share, Bookmark, BadgeCheck, Landmark, ArrowLeft, Loader2, Star, Check } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from 'react-i18next';
+import { useState, useEffect } from 'react';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { Session } from '@supabase/supabase-js';
 
 interface StrategyDetailViewProps {
-  onNavigate: (view: string) => void;
+  onNavigate: (view: string, id?: string) => void;
+  strategyId?: string;
 }
 
-export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
+interface Strategy {
+  id: string;
+  name: string;
+  monthly_return: number;
+  win_rate: number;
+  drawdown: number;
+  profit_factor: number;
+  investors: number;
+  aum: string;
+  chart_data: any;
+  is_featured: boolean;
+}
+
+export function StrategyDetailView({ onNavigate, strategyId }: StrategyDetailViewProps) {
   const { t } = useTranslation();
+  const [strategy, setStrategy] = useState<Strategy | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSession(session);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    async function checkWatchlist() {
+      if (session && strategy && isSupabaseConfigured) {
+        const { data } = await supabase
+          .from('user_watchlist')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .eq('strategy_id', strategy.id)
+          .maybeSingle();
+        
+        setIsInWatchlist(!!data);
+      }
+    }
+    checkWatchlist();
+  }, [session, strategy]);
+
+  useEffect(() => {
+    async function fetchStrategy() {
+      if (!isSupabaseConfigured) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        let query = supabase
+          .from('trading_strategies')
+          .select('*');
+          
+        if (strategyId && !strategyId.startsWith('static-')) {
+          query = query.eq('id', strategyId);
+        } else {
+          query = query.limit(1);
+        }
+
+        const { data, error } = await query.single();
+
+        if (error) throw error;
+        if (data) setStrategy(data);
+      } catch (err) {
+        console.error('Error fetching strategy:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchStrategy();
+  }, [strategyId]);
+
+  const handleToggleWatchlist = async () => {
+    if (!strategy || !session || !isSupabaseConfigured) return;
+    
+    setIsUpdating(true);
+    try {
+      if (isInWatchlist) {
+        // Remove from watchlist
+        const { error } = await supabase
+          .from('user_watchlist')
+          .delete()
+          .eq('user_id', session.user.id)
+          .eq('strategy_id', strategy.id);
+        
+        if (error) throw error;
+        setIsInWatchlist(false);
+      } else {
+        // Add to watchlist
+        const { error } = await supabase
+          .from('user_watchlist')
+          .insert({
+            user_id: session.user.id,
+            strategy_id: strategy.id
+          });
+        
+        if (error) throw error;
+        setIsInWatchlist(true);
+      }
+    } catch (err) {
+      console.error('Error toggling watchlist:', err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleShare = async () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('view', 'strategy-detail');
+      if (strategyId) {
+        url.searchParams.set('id', strategyId);
+      }
+      
+      await navigator.clipboard.writeText(url.toString());
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy URL:', err);
+    }
+  };
 
   return (
     <main className="pt-24 px-4 md:px-8 pb-12 max-w-[1600px] mx-auto">
@@ -25,101 +154,218 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
         {/* Left Column: Strategy Details (8/12) */}
         <div className="xl:col-span-8 space-y-8">
           
-          {/* Hero Header */}
-          <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <Badge variant="primary" className="flex items-center gap-1">
-                  <BadgeCheck className="w-3 h-3" /> Verified
-                </Badge>
-                <Badge variant="secondary">High Yield</Badge>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">Viper Scalper Pro</h1>
-              <p className="text-on-surface-variant flex items-center gap-2">
-                Risk Level: <span className="text-on-surface font-semibold">Medium (4/10)</span>
-                <span className="flex gap-0.5 ml-2">
-                  <span className="w-4 h-1 bg-primary rounded-full"></span>
-                  <span className="w-4 h-1 bg-primary rounded-full"></span>
-                  <span className="w-4 h-1 bg-primary rounded-full"></span>
-                  <span className="w-4 h-1 bg-primary rounded-full"></span>
-                  <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
-                  <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
-                  <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
-                  <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
-                  <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
-                  <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
-                </span>
-              </p>
+          {loading ? (
+            <div className="flex justify-center py-24">
+              <Loader2 className="w-8 h-8 text-primary animate-spin" />
             </div>
-            <div className="flex gap-4">
-              <Button variant="secondary" className="flex items-center gap-2 px-4 py-2">
-                <Share className="w-4 h-4" /> Share
-              </Button>
-              <Button variant="secondary" className="flex items-center gap-2 px-4 py-2">
-                <Bookmark className="w-4 h-4" /> Watchlist
-              </Button>
-            </div>
-          </header>
-
-          {/* Equity Chart Card */}
-          <Card className="p-6 relative overflow-hidden group">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant tracking-wider">Equity Curve</p>
-                <div className="flex items-baseline gap-2">
-                  <h3 className="text-3xl font-bold text-on-surface">$24,502.84</h3>
-                  <span className="text-primary font-bold">+145.02%</span>
+          ) : strategy && (!strategyId || !strategyId.startsWith('static-')) ? (
+            <>
+              {/* Hero Header */}
+              <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge variant="primary" className="flex items-center gap-1">
+                      <BadgeCheck className="w-3 h-3" /> {t('strategies.verified')}
+                    </Badge>
+                    <Badge variant="secondary">
+                      {strategy.drawdown > 15 ? t('dashboard.highRisk') : strategy.drawdown > 8 ? t('dashboard.mediumRisk') : t('dashboard.lowRisk')}
+                    </Badge>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">{strategy.name}</h1>
+                  <p className="text-on-surface-variant flex items-center gap-2">
+                    {t('strategies.riskLevel')}: <span className="text-on-surface font-semibold">
+                      {strategy.drawdown > 15 ? t('strategies.high') : strategy.drawdown > 8 ? t('strategies.medium') : t('strategies.low')} ({strategy.drawdown.toFixed(1)}% DD)
+                    </span>
+                    <span className="flex gap-0.5 ml-2">
+                      {[...Array(10)].map((_, i) => {
+                        const filledBars = Math.max(1, Math.min(10, strategy.drawdown >= 95 ? 10 : Math.floor(strategy.drawdown / 10)));
+                        return (
+                          <span key={i} className={`w-4 h-1 rounded-full ${
+                            i < filledBars
+                              ? (strategy.drawdown > 15 ? 'bg-tertiary' : strategy.drawdown > 8 ? 'bg-secondary' : 'bg-primary')
+                              : 'bg-surface-container-highest'
+                          }`}></span>
+                        );
+                      })}
+                    </span>
+                  </p>
                 </div>
-              </div>
-              <div className="flex bg-surface-container-lowest p-1 rounded-lg">
-                {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map((tf) => (
-                  <button key={tf} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${tf === '3M' ? 'bg-surface-container-highest text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
-                    {tf}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* Chart Placeholder Visual */}
-            <div className="h-[300px] w-full flex items-end gap-1 relative">
-              <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
-                <defs>
-                  <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                    <stop offset="0%" stopColor="#4edea3" stopOpacity="0.3"></stop>
-                    <stop offset="100%" stopColor="#4edea3" stopOpacity="0"></stop>
-                  </linearGradient>
-                </defs>
-                <path d="M0,280 L50,260 L100,270 L150,240 L200,250 L250,210 L300,220 L350,180 L400,190 L450,150 L500,160 L550,120 L600,130 L650,90 L700,110 L750,70 L800,85 L850,50 L900,60 L950,20 L1000,40 V300 H0 Z" fill="url(#chartGradient)"></path>
-                <path className="sparkline-glow" d="M0,280 L50,260 L100,270 L150,240 L200,250 L250,210 L300,220 L350,180 L400,190 L450,150 L500,160 L550,120 L600,130 L650,90 L700,110 L750,70 L800,85 L850,50 L900,60 L950,20 L1000,40" fill="none" stroke="#4edea3" strokeWidth="3"></path>
-              </svg>
-              <div className="absolute left-0 bottom-0 text-[0.6rem] text-on-surface-variant opacity-50 flex w-full justify-between pb-2">
-                <span>AUG 12</span>
-                <span>SEP 12</span>
-                <span>OCT 12</span>
-                <span>NOV 12</span>
-              </div>
-            </div>
-          </Card>
+                <div className="flex gap-4">
+                  <Button variant="secondary" className="flex items-center gap-2 px-4 py-2" onClick={handleShare}>
+                    {isCopied ? <Check className="w-4 h-4 text-primary" /> : <Share className="w-4 h-4" />} 
+                    {isCopied ? t('strategies.copied', 'Copied!') : t('strategies.share')}
+                  </Button>
+                  {session && (
+                    <Button 
+                      variant={isInWatchlist ? "primary" : "secondary"}
+                      className="flex items-center gap-2 px-4 py-2"
+                      onClick={handleToggleWatchlist}
+                      disabled={isUpdating}
+                    >
+                      <Bookmark className={`w-4 h-4 ${isInWatchlist ? 'fill-current' : ''}`} />
+                      {isInWatchlist ? t('strategies.inWatchlist') : t('strategies.addToWatchlist')}
+                    </Button>
+                  )}
+                </div>
+              </header>
 
-          {/* KPI Stats Bar */}
-          <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Sharpe Ratio', value: '1.8' },
-              { label: 'Profit Factor', value: '2.1' },
-              { label: 'Win Rate', value: '68%' },
-              { label: 'Max Drawdown', value: '8.4%', isError: true },
-            ].map((stat) => (
-              <div key={stat.label} className="bg-surface-container-high p-5 rounded-xl">
-                <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-1">{stat.label}</p>
-                <h4 className={`text-2xl font-bold ${stat.isError ? 'text-error' : 'text-on-surface'}`}>{stat.value}</h4>
-              </div>
-            ))}
-          </section>
+              {/* Equity Chart Card */}
+              <Card className="p-6 relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant tracking-wider">{t('dashboard.monthlyReturn')}</p>
+                    <div className="flex items-baseline gap-2">
+                      <h3 className={`text-3xl font-bold ${strategy.monthly_return >= 0 ? 'text-primary' : 'text-tertiary'}`}>
+                        {strategy.monthly_return >= 0 ? '+' : ''}{strategy.monthly_return.toFixed(2)}%
+                      </h3>
+                    </div>
+                  </div>
+                  <div className="flex bg-surface-container-lowest p-1 rounded-lg">
+                    {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map((tf) => (
+                      <button key={tf} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${tf === '3M' ? 'bg-surface-container-highest text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                        {tf}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Chart Placeholder Visual */}
+                <div className="h-[300px] w-full flex items-end gap-1 relative">
+                  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#4edea3" stopOpacity="0.3"></stop>
+                        <stop offset="100%" stopColor="#4edea3" stopOpacity="0"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0,280 L50,260 L100,270 L150,240 L200,250 L250,210 L300,220 L350,180 L400,190 L450,150 L500,160 L550,120 L600,130 L650,90 L700,110 L750,70 L800,85 L850,50 L900,60 L950,20 L1000,40 V300 H0 Z" fill="url(#chartGradient)"></path>
+                    <path className="sparkline-glow" d="M0,280 L50,260 L100,270 L150,240 L200,250 L250,210 L300,220 L350,180 L400,190 L450,150 L500,160 L550,120 L600,130 L650,90 L700,110 L750,70 L800,85 L850,50 L900,60 L950,20 L1000,40" fill="none" stroke="#4edea3" strokeWidth="3"></path>
+                  </svg>
+                  <div className="absolute left-0 bottom-0 text-[0.6rem] text-on-surface-variant opacity-50 flex w-full justify-between pb-2">
+                    <span>AUG 12</span>
+                    <span>SEP 12</span>
+                    <span>OCT 12</span>
+                    <span>NOV 12</span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* KPI Stats Bar */}
+              <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: t('strategies.profitFactor'), value: strategy.profit_factor.toFixed(2) },
+                  { label: t('strategies.winRate'), value: `${strategy.win_rate.toFixed(1)}%` },
+                  { label: t('dashboard.maxDrawdown'), value: `${strategy.drawdown.toFixed(2)}%`, isError: strategy.drawdown > 15 },
+                  { label: t('dashboard.investors'), value: strategy.investors.toLocaleString() },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-surface-container-high p-5 rounded-xl">
+                    <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-1">{stat.label}</p>
+                    <h4 className={`text-2xl font-bold ${stat.isError ? 'text-tertiary' : 'text-on-surface'}`}>{stat.value}</h4>
+                  </div>
+                ))}
+              </section>
+            </>
+          ) : (
+            // Fallback static content
+            <>
+              {/* Hero Header */}
+              <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <Badge variant="primary" className="flex items-center gap-1">
+                      <BadgeCheck className="w-3 h-3" /> Verified
+                    </Badge>
+                    <Badge variant="secondary">High Yield</Badge>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">Viper Scalper Pro</h1>
+                  <p className="text-on-surface-variant flex items-center gap-2">
+                    Risk Level: <span className="text-on-surface font-semibold">Medium (4/10)</span>
+                    <span className="flex gap-0.5 ml-2">
+                      <span className="w-4 h-1 bg-primary rounded-full"></span>
+                      <span className="w-4 h-1 bg-primary rounded-full"></span>
+                      <span className="w-4 h-1 bg-primary rounded-full"></span>
+                      <span className="w-4 h-1 bg-primary rounded-full"></span>
+                      <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
+                      <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
+                      <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
+                      <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
+                      <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
+                      <span className="w-4 h-1 bg-surface-container-highest rounded-full"></span>
+                    </span>
+                  </p>
+                </div>
+                <div className="flex gap-4">
+                  <Button variant="secondary" className="flex items-center gap-2 px-4 py-2" onClick={handleShare}>
+                    {isCopied ? <Check className="w-4 h-4 text-primary" /> : <Share className="w-4 h-4" />} 
+                    {isCopied ? t('strategies.copied', 'Copied!') : t('strategies.share')}
+                  </Button>
+                  <Button variant="secondary" className="flex items-center gap-2 px-4 py-2">
+                    <Bookmark className="w-4 h-4" /> {t('strategies.watchlist')}
+                  </Button>
+                </div>
+              </header>
+
+              {/* Equity Chart Card */}
+              <Card className="p-6 relative overflow-hidden group">
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant tracking-wider">Equity Curve</p>
+                    <div className="flex items-baseline gap-2">
+                      <h3 className="text-3xl font-bold text-on-surface">$24,502.84</h3>
+                      <span className="text-primary font-bold">+145.02%</span>
+                    </div>
+                  </div>
+                  <div className="flex bg-surface-container-lowest p-1 rounded-lg">
+                    {['1D', '1W', '1M', '3M', '1Y', 'ALL'].map((tf) => (
+                      <button key={tf} className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${tf === '3M' ? 'bg-surface-container-highest text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}>
+                        {tf}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Chart Placeholder Visual */}
+                <div className="h-[300px] w-full flex items-end gap-1 relative">
+                  <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 1000 300">
+                    <defs>
+                      <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="#4edea3" stopOpacity="0.3"></stop>
+                        <stop offset="100%" stopColor="#4edea3" stopOpacity="0"></stop>
+                      </linearGradient>
+                    </defs>
+                    <path d="M0,280 L50,260 L100,270 L150,240 L200,250 L250,210 L300,220 L350,180 L400,190 L450,150 L500,160 L550,120 L600,130 L650,90 L700,110 L750,70 L800,85 L850,50 L900,60 L950,20 L1000,40 V300 H0 Z" fill="url(#chartGradient)"></path>
+                    <path className="sparkline-glow" d="M0,280 L50,260 L100,270 L150,240 L200,250 L250,210 L300,220 L350,180 L400,190 L450,150 L500,160 L550,120 L600,130 L650,90 L700,110 L750,70 L800,85 L850,50 L900,60 L950,20 L1000,40" fill="none" stroke="#4edea3" strokeWidth="3"></path>
+                  </svg>
+                  <div className="absolute left-0 bottom-0 text-[0.6rem] text-on-surface-variant opacity-50 flex w-full justify-between pb-2">
+                    <span>AUG 12</span>
+                    <span>SEP 12</span>
+                    <span>OCT 12</span>
+                    <span>NOV 12</span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* KPI Stats Bar */}
+              <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { label: 'Sharpe Ratio', value: '1.8' },
+                  { label: 'Profit Factor', value: '2.1' },
+                  { label: 'Win Rate', value: '68%' },
+                  { label: 'Max Drawdown', value: '8.4%', isError: true },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-surface-container-high p-5 rounded-xl">
+                    <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-1">{stat.label}</p>
+                    <h4 className={`text-2xl font-bold ${stat.isError ? 'text-error' : 'text-on-surface'}`}>{stat.value}</h4>
+                  </div>
+                ))}
+              </section>
+            </>
+          )}
 
           {/* Portfolio Analysis Section */}
           <section className="grid md:grid-cols-2 gap-8">
             <Card className="p-6">
-              <h3 className="text-lg font-bold text-on-surface mb-6">Asset Allocation</h3>
+              <h3 className="text-lg font-bold text-on-surface mb-6">{t('strategies.assetAllocation')}</h3>
               <div className="flex items-center gap-8">
                 <div className="relative w-32 h-32">
                   <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
@@ -150,12 +396,12 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
               </div>
             </Card>
             <Card className="p-6">
-              <h3 className="text-lg font-bold text-on-surface mb-6">Trading Style</h3>
+              <h3 className="text-lg font-bold text-on-surface mb-6">{t('strategies.tradingStyle')}</h3>
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-on-surface-variant">Scalping Intensity</span>
-                    <span className="text-primary">Very High</span>
+                    <span className="text-on-surface-variant">{t('strategies.scalpingIntensity')}</span>
+                    <span className="text-primary">{t('strategies.veryHigh')}</span>
                   </div>
                   <div className="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
                     <div className="h-full bg-primary w-[92%]"></div>
@@ -163,15 +409,15 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
                 </div>
                 <div>
                   <div className="flex justify-between text-xs mb-1">
-                    <span className="text-on-surface-variant">Avg. Hold Time</span>
-                    <span className="text-on-surface">4.2 Minutes</span>
+                    <span className="text-on-surface-variant">{t('strategies.avgHoldTime')}</span>
+                    <span className="text-on-surface">4.2 {t('strategies.minutes')}</span>
                   </div>
                   <div className="h-1 w-full bg-surface-container-highest rounded-full overflow-hidden">
                     <div className="h-full bg-secondary w-[15%]"></div>
                   </div>
                 </div>
                 <p className="text-sm text-on-surface-variant leading-relaxed">
-                  Viper Scalper Pro utilizes a proprietary high-frequency algorithm targeting micro-inefficiencies in major currency pairs. Executions are automated with strict volatility filters.
+                  {t('strategies.tradingStyleDesc')}
                 </p>
               </div>
             </Card>
@@ -180,17 +426,17 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
           {/* Recent Trades Table */}
           <Card className="overflow-hidden">
             <div className="p-6">
-              <h3 className="text-lg font-bold text-on-surface">Recent Executions</h3>
+              <h3 className="text-lg font-bold text-on-surface">{t('strategies.recentExecutions')}</h3>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
                   <tr className="bg-surface-container-highest/50 text-[0.6875rem] font-medium uppercase tracking-wider text-on-surface-variant">
-                    <th className="px-6 py-3">Symbol</th>
-                    <th className="px-6 py-3">Type</th>
-                    <th className="px-6 py-3">Lots</th>
-                    <th className="px-6 py-3">Open Price</th>
-                    <th className="px-6 py-3 text-right">Profit</th>
+                    <th className="px-6 py-3">{t('strategies.symbol')}</th>
+                    <th className="px-6 py-3">{t('strategies.type')}</th>
+                    <th className="px-6 py-3">{t('strategies.lots')}</th>
+                    <th className="px-6 py-3">{t('strategies.openPrice')}</th>
+                    <th className="px-6 py-3 text-right">{t('strategies.profit')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-container-highest/30">
@@ -222,10 +468,10 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
             
             {/* Investment Panel */}
             <Card variant="glass" className="p-8">
-              <h3 className="text-xl font-bold text-on-surface mb-6">Invest in Strategy</h3>
+              <h3 className="text-xl font-bold text-on-surface mb-6">{t('strategies.investInStrategy')}</h3>
               <div className="space-y-6">
                 <div>
-                  <label className="text-[0.6875rem] font-bold uppercase text-on-surface-variant tracking-widest block mb-2">Investment Amount</label>
+                  <label className="text-[0.6875rem] font-bold uppercase text-on-surface-variant tracking-widest block mb-2">{t('strategies.investmentAmount')}</label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">$</span>
                     <input 
@@ -237,11 +483,11 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
                 </div>
                 
                 <div className="p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
-                  <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-4">Projected Returns (12M)</p>
+                  <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-4">{t('strategies.projectedReturns')}</p>
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-3xl font-bold text-primary">+$7,250</p>
-                      <p className="text-xs text-on-surface-variant">Est. Balance: $12,250</p>
+                      <p className="text-xs text-on-surface-variant">{t('strategies.estBalance')}: $12,250</p>
                     </div>
                     <div className="text-right">
                       <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded font-bold">+145%</span>
@@ -251,24 +497,24 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
 
                 <ul className="space-y-3">
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-on-surface-variant">Performance Fee</span>
-                    <span className="text-on-surface font-medium">20% of profits</span>
+                    <span className="text-on-surface-variant">{t('strategies.performanceFee')}</span>
+                    <span className="text-on-surface font-medium">20% {t('strategies.ofProfits')}</span>
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-on-surface-variant">Minimum Term</span>
-                    <span className="text-on-surface font-medium">None (Liquid)</span>
+                    <span className="text-on-surface-variant">{t('strategies.minimumTerm')}</span>
+                    <span className="text-on-surface font-medium">{t('strategies.liquid')}</span>
                   </li>
                   <li className="flex items-center justify-between text-sm">
-                    <span className="text-on-surface-variant">Total Investors</span>
+                    <span className="text-on-surface-variant">{t('strategies.totalInvestors')}</span>
                     <span className="text-on-surface font-medium">1,429</span>
                   </li>
                 </ul>
 
                 <Button className="w-full py-4 text-lg">
-                  Confirm Investment
+                  {t('strategies.confirmInvestment')}
                 </Button>
                 <p className="text-[0.6rem] text-center text-on-surface-variant opacity-60 px-4">
-                  Past performance is not indicative of future results. Trading involves significant risk of loss.
+                  {t('strategies.riskWarning')}
                 </p>
               </div>
             </Card>
@@ -288,7 +534,7 @@ export function StrategyDetailView({ onNavigate }: StrategyDetailViewProps) {
                 Viper Trading Lab is a premier algorithmic quant house specialized in FX scalping and HFT strategies with over $50M AUM.
               </p>
               <Button variant="outline" className="w-full py-2 text-xs text-secondary border-secondary/20 hover:bg-secondary/5">
-                View Firm Profile
+                {t('strategies.viewFirmProfile')}
               </Button>
             </Card>
 

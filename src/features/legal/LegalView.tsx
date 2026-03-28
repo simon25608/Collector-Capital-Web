@@ -12,7 +12,7 @@ export function LegalView({ setView }: { setView: (view: string) => void }) {
         <header className="mb-16 border-b border-outline-variant/10 pb-12">
           <div className="flex items-center gap-3 mb-6">
             <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-[0.2em] rounded-full">{t('legal.regulatoryDoc')}</span>
-            <span className="text-on-surface-variant text-xs font-medium uppercase tracking-widest">v2024.04</span>
+            <span className="text-on-surface-variant text-xs font-medium uppercase tracking-widest">v2026.03</span>
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight text-on-surface mb-8">{t('legal.title')}</h1>
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
