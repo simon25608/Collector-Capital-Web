@@ -422,7 +422,8 @@ export function StrategyDetailView({
                     variant="secondary"
                     className="flex items-center gap-2 px-4 py-2"
                   >
-                    <Bookmark className="w-4 h-4" /> {t("strategies.watchlist")}
+                    <Bookmark className="w-4 h-4" />{" "}
+                    {t("strategies.addToWatchlist")}
                   </Button>
                 </div>
               </header>
@@ -776,7 +777,7 @@ export function StrategyDetailView({
                   return (
                     <div className="p-4 bg-surface-container-lowest rounded-xl border border-outline-variant/10">
                       <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-4">
-                        {t("strategies.projectedReturns")} (12M)
+                        {t("strategies.projectedReturns")}
                       </p>
                       <div className="flex justify-between items-end">
                         <div>
@@ -810,31 +811,35 @@ export function StrategyDetailView({
                   );
                 })()}
 
-                <ul className="space-y-3">
-                  <li className="flex items-center justify-between text-sm">
-                    <span className="text-on-surface-variant">
+                <ul className="divide-y divide-outline-variant/10 rounded-xl overflow-hidden border border-outline-variant/10">
+                  <li className="flex items-center justify-between px-4 py-3 bg-surface-container-lowest">
+                    <span className="text-xs text-on-surface-variant">
                       {t("strategies.performanceFee")}
                     </span>
-                    <span className="text-on-surface font-medium">
-                      {strategy?.performance_fee ?? 20}%{" "}
-                      {t("strategies.ofProfits")}
-                    </span>
+                    <div className="flex flex-col items-end">
+                      <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-lg">
+                        {strategy?.performance_fee ?? 20}%
+                      </span>
+                      <span className="text-[0.6rem] text-on-surface-variant mt-0.5">
+                        {t("strategies.ofProfits")}
+                      </span>
+                    </div>
                   </li>
-                  <li className="flex items-center justify-between text-sm">
-                    <span className="text-on-surface-variant">
+                  <li className="flex items-center justify-between px-4 py-3 bg-surface-container-lowest">
+                    <span className="text-xs text-on-surface-variant">
                       {t("strategies.minimumTerm")}
                     </span>
-                    <span className="text-on-surface font-medium">
+                    <span className="text-sm font-semibold text-on-surface">
                       {strategy?.minimum_term?.toLowerCase() === "liquid"
                         ? t("strategies.liquid")
                         : (strategy?.minimum_term ?? t("strategies.liquid"))}
                     </span>
                   </li>
-                  <li className="flex items-center justify-between text-sm">
-                    <span className="text-on-surface-variant">
+                  <li className="flex items-center justify-between px-4 py-3 bg-surface-container-lowest">
+                    <span className="text-xs text-on-surface-variant">
                       {t("strategies.totalInvestors")}
                     </span>
-                    <span className="text-on-surface font-medium">
+                    <span className="text-sm font-semibold text-on-surface">
                       {strategy ? strategy.investors.toLocaleString() : "–"}
                     </span>
                   </li>

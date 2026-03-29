@@ -1,13 +1,12 @@
 import {
-  Mail,
-  MessageSquare,
-  Phone,
   Loader2,
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
+import { ChannelCards } from "@/components/ui/channel-cards";
+import { CustomSelect, type SelectOption } from "@/components/ui/custom-select";
 import React, { useState, useEffect } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
@@ -124,15 +123,15 @@ export function ContactView({
   };
 
   return (
-    <main className="pt-24 pb-12">
+    <main className="pt-20 sm:pt-24 pb-12">
       {/* Section 1: Hero */}
-      <section className="relative py-16 px-8 overflow-hidden">
+      <section className="relative py-10 sm:py-16 px-4 sm:px-8 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative z-10 text-center">
           <span className="text-primary font-medium tracking-[0.2em] uppercase text-[11px] mb-4 block">
             {t("contact.institutionalAccess")}
           </span>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-on-surface">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 text-on-surface">
             {t("contact.title")}
           </h1>
           <p className="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto">
@@ -142,10 +141,10 @@ export function ContactView({
       </section>
 
       {/* Section 2: Form & Channels */}
-      <section className="max-w-7xl mx-auto px-8 py-12">
-        <div className="grid lg:grid-cols-2 gap-16 items-start">
+      <section className="max-w-7xl mx-auto px-4 sm:px-8 py-8 sm:py-12">
+        <div className="grid lg:grid-cols-2 gap-8 sm:gap-16 items-start">
           {/* Contact Form */}
-          <div className="bg-surface-container-low p-8 md:p-12 rounded-xl shadow-2xl">
+          <div className="bg-surface-container-low p-5 sm:p-8 md:p-12 rounded-xl shadow-2xl">
             <h2 className="text-2xl font-semibold mb-8">
               {t("contact.directInquiry")}
             </h2>
@@ -196,29 +195,25 @@ export function ContactView({
                 <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">
                   {t("contact.strategyInterest")}
                 </label>
-                <select
-                  name="subject"
-                  required
+                <input type="hidden" name="subject" value={selectedStrategy} />
+                <CustomSelect
                   value={selectedStrategy}
-                  onChange={(e) => setSelectedStrategy(e.target.value)}
-                  className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none"
-                >
-                  {strategies.length > 0 ? (
-                    strategies.map((s, i) => (
-                      <option key={i} value={s.name}>
-                        {s.display_name || s.name}
-                      </option>
-                    ))
-                  ) : (
-                    <>
-                      <option>{t("contact.forexSpot")}</option>
-                      <option>{t("contact.fixedIncome")}</option>
-                      <option>{t("contact.algoTrading")}</option>
-                      <option>{t("contact.portfolioAdvisory")}</option>
-                    </>
-                  )}
-                  <option value="Other">{t("contact.other")}</option>
-                </select>
+                  onChange={setSelectedStrategy}
+                  options={[
+                    ...(strategies.length > 0
+                      ? strategies.map((s): SelectOption => ({
+                          value: s.name,
+                          label: s.display_name || s.name,
+                        }))
+                      : [
+                          { value: t("contact.forexSpot"), label: t("contact.forexSpot") },
+                          { value: t("contact.fixedIncome"), label: t("contact.fixedIncome") },
+                          { value: t("contact.algoTrading"), label: t("contact.algoTrading") },
+                          { value: t("contact.portfolioAdvisory"), label: t("contact.portfolioAdvisory") },
+                        ]),
+                    { value: "Other", label: t("contact.other") },
+                  ]}
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">
@@ -256,78 +251,26 @@ export function ContactView({
           </div>
 
           {/* Support Channels */}
-          <div className="space-y-8">
-            <div className="group p-8 bg-surface-container-high rounded-xl hover:bg-surface-bright transition-all cursor-pointer">
-              <div className="flex items-start gap-6">
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                  <Mail className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-1">
-                    {t("contact.priorityEmail")}
-                  </h3>
-                  <p className="text-on-surface-variant text-sm mb-3">
-                    {t("contact.emailResponse")}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="group p-8 bg-surface-container-high rounded-xl hover:bg-surface-bright transition-all cursor-pointer">
-              <div className="flex items-start gap-6">
-                <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
-                  <MessageSquare className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-1">
-                    {t("contact.liveChat")}
-                  </h3>
-                  <p className="text-on-surface-variant text-sm mb-3">
-                    {t("contact.chatResponse")}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => onNavigate && onNavigate("auth")}
-                    className="text-secondary font-bold text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all"
-                  >
-                    {t("contact.startSession")} &rarr;
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="group p-8 bg-surface-container-high rounded-xl hover:bg-surface-bright transition-all cursor-pointer">
-              <div className="flex items-start gap-6">
-                <div className="w-12 h-12 rounded-lg bg-tertiary/10 flex items-center justify-center text-tertiary">
-                  <Phone className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-1">
-                    {t("contact.phone")}
-                  </h3>
-                  <p className="text-on-surface-variant text-sm mb-3">
-                    {t("contact.phoneResponse")}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <ChannelCards
+            onNavigate={onNavigate}
+            className="space-y-4 sm:space-y-8"
+          />
         </div>
       </section>
 
       {/* Section 3: Office Locations Map */}
-      <section className="py-24 px-8 bg-surface-container-low mt-12">
+      <section className="py-12 sm:py-24 px-4 sm:px-8 bg-surface-container-low mt-8 sm:mt-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-12">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 sm:gap-8 mb-8 sm:mb-12">
             <div className="max-w-md">
-              <h2 className="text-3xl font-bold mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">
                 {t("contact.globalPresence")}
               </h2>
               <p className="text-on-surface-variant">
                 {t("contact.globalSubtitle")}
               </p>
             </div>
-            <div className="flex gap-12 font-mono text-xs uppercase tracking-widest text-on-surface-variant">
+            <div className="flex gap-6 sm:gap-12 font-mono text-xs uppercase tracking-widest text-on-surface-variant">
               <div>
                 <span className="text-primary block mb-1">London</span>
                 <span>HQ & Desk</span>
@@ -343,7 +286,7 @@ export function ContactView({
             </div>
           </div>
 
-          <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden bg-surface-container-lowest grayscale brightness-75 hover:grayscale-0 hover:brightness-100 transition-all duration-700 cursor-crosshair">
+          <div className="relative w-full aspect-[4/3] sm:aspect-[16/7] md:aspect-[21/9] rounded-2xl overflow-hidden bg-surface-container-lowest grayscale brightness-75 hover:grayscale-0 hover:brightness-100 transition-all duration-700 cursor-crosshair">
             <img
               src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=2000"
               alt="World Map"

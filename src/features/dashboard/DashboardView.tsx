@@ -69,7 +69,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
           .select("*")
           .eq("is_visible", true)
           .order("monthly_return", { ascending: false })
-          .limit(6);
+          .limit(3);
 
         if (strategiesError) throw strategiesError;
         if (strategiesData) setStrategies(strategiesData);
@@ -102,7 +102,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
   return (
     <main className="min-h-screen">
       {/* Hero Section: Featured Strategy */}
-      <section className="relative px-8 py-24 lg:py-32 overflow-hidden">
+      <section className="relative px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 overflow-hidden">
         <div
           className="absolute top-0 right-0 -z-10 w-2/3 h-full opacity-20 pointer-events-none"
           style={{
@@ -123,21 +123,23 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   {t("dashboard.featuredStrategy")}
                 </span>
               </div>
-              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-on-surface leading-[1.1]">
+              <h1 className="text-3xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-on-surface leading-[1.1]">
                 {featuredStrategy?.display_name ||
                   featuredStrategy?.name ||
                   t("dashboard.heroTitle")}{" "}
-                <span className="text-primary">Strategy</span>
+                <span className="text-primary">
+                  {t("dashboard.strategyWord")}
+                </span>
               </h1>
               <p className="text-lg text-on-surface-variant max-w-xl leading-relaxed">
                 {t("dashboard.heroSubtitle")}
               </p>
-              <div className="flex flex-wrap gap-12 pt-4">
+              <div className="flex flex-wrap justify-center sm:justify-start gap-6 sm:gap-12 pt-4">
                 <div>
                   <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                     {t("dashboard.cumulativeGain")}
                   </p>
-                  <p className="text-4xl font-bold text-primary">
+                  <p className="text-3xl sm:text-4xl font-bold text-primary">
                     +{featuredStrategy?.monthly_return.toFixed(2)}%
                   </p>
                 </div>
@@ -145,7 +147,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                     {t("dashboard.maxDrawdown")}
                   </p>
-                  <p className="text-4xl font-bold text-tertiary">
+                  <p className="text-3xl sm:text-4xl font-bold text-tertiary">
                     {Math.abs(featuredStrategy?.drawdown ?? 0).toFixed(1)}%
                   </p>
                 </div>
@@ -153,17 +155,17 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                     {t("dashboard.investors")}
                   </p>
-                  <p className="text-4xl font-bold text-on-surface">
+                  <p className="text-3xl sm:text-4xl font-bold text-on-surface">
                     {featuredStrategy?.investors.toLocaleString()}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-6 pt-6">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-6">
                 <button
                   onClick={() =>
                     onNavigate("strategy-detail", featuredStrategy?.id)
                   }
-                  className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+                  className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-8 py-4 rounded-lg font-bold text-base uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform text-center"
                 >
                   {t("dashboard.investNow")}
                 </button>
@@ -171,7 +173,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   onClick={() =>
                     onNavigate("strategy-detail", featuredStrategy?.id)
                   }
-                  className="bg-surface-container-highest text-on-surface px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest hover:bg-surface-bright transition-colors"
+                  className="bg-surface-container-highest text-on-surface px-8 py-4 rounded-lg font-bold text-base uppercase tracking-widest hover:bg-surface-bright transition-colors text-center"
                 >
                   {t("dashboard.viewLedger")}
                 </button>
@@ -207,28 +209,20 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
       </section>
 
       {/* Strategy Catalog Section */}
-      <section className="bg-[#131b2e] py-24 px-8">
+      <section className="bg-[#131b2e] py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-16">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 sm:gap-6 mb-10 sm:mb-16">
             <div>
-              <h2 className="text-3xl font-bold mb-4">
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">
                 {t("dashboard.strategyCatalog")}
               </h2>
               <p className="text-on-surface-variant max-w-md">
                 {t("dashboard.strategyCatalogSubtitle")}
               </p>
             </div>
-            <div className="flex gap-4">
-              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-sm font-medium border border-outline-variant/10 hover:bg-surface-container-highest transition-colors">
-                {t("dashboard.filterAllAssets")}
-              </button>
-              <button className="bg-surface-container-high px-4 py-2 rounded-lg text-sm font-medium border border-outline-variant/10 hover:bg-surface-container-highest transition-colors">
-                {t("dashboard.sortReturn")}
-              </button>
-            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-8">
             {loading ? (
               <div className="col-span-full flex justify-center py-12">
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
@@ -240,7 +234,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   <div
                     key={strategy.id}
                     onClick={() => onNavigate("strategy-detail", strategy.id)}
-                    className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
+                    className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
                   >
                     <div className="flex justify-between items-start mb-6">
                       <div>
@@ -280,7 +274,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                         </p>
                       </div>
                       <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
-                        Explore
+                        {t("dashboard.explore")}
                       </button>
                     </div>
                   </div>
@@ -292,7 +286,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 {/* Strategy Card 1 */}
                 <div
                   onClick={() => onNavigate("strategy-detail", "static-1")}
-                  className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
+                  className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div>
@@ -300,7 +294,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                         Alpha Momentum
                       </h4>
                       <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
-                        {t("dashboard.mediumRisk")}
+                        {t("dashboard.moderateRisk")}
                       </span>
                     </div>
                     <div className="bg-surface-container-highest p-2 rounded-lg">
@@ -317,12 +311,12 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   <div className="flex justify-between items-end">
                     <div>
                       <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
-                        Total Return
+                        {t("dashboard.totalReturn")}
                       </p>
                       <p className="text-2xl font-bold text-primary">+42.18%</p>
                     </div>
                     <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
-                      Explore
+                      {t("dashboard.explore")}
                     </button>
                   </div>
                 </div>
@@ -330,7 +324,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 {/* Strategy Card 2 */}
                 <div
                   onClick={() => onNavigate("strategy-detail", "static-2")}
-                  className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
+                  className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div>
@@ -371,7 +365,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
       </section>
 
       {/* Institutional Excellence Section */}
-      <section className="py-24 px-8 overflow-hidden relative">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden relative">
         <div
           className="absolute bottom-0 left-0 -z-10 w-1/2 h-full opacity-10 pointer-events-none"
           style={{
@@ -430,7 +424,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative hidden sm:block">
               <div className="aspect-square bg-surface-container-high rounded-3xl overflow-hidden border border-outline-variant/10 shadow-2xl">
                 <img
                   alt="Interface Visualization"
@@ -459,9 +453,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
       </section>
 
       {/* Call to Action */}
-      <section className="py-24 px-8">
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="bg-surface-container-highest rounded-3xl p-12 lg:p-24 text-center relative overflow-hidden border border-outline-variant/10">
+          <div className="bg-surface-container-highest rounded-3xl p-8 sm:p-12 lg:p-24 text-center relative overflow-hidden border border-outline-variant/10">
             <div
               className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none"
               style={{
@@ -469,22 +463,22 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   "linear-gradient(135deg, #10b981 0%, transparent 50%, #0566d9 100%)",
               }}
             ></div>
-            <h2 className="text-4xl lg:text-6xl font-bold mb-8 relative z-10">
+            <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-6 sm:mb-8 relative z-10">
               {t("dashboard.ctaTitle")}
             </h2>
-            <p className="text-on-surface-variant max-w-2xl mx-auto mb-12 text-lg relative z-10">
+            <p className="text-on-surface-variant max-w-2xl mx-auto mb-8 sm:mb-12 text-base sm:text-lg relative z-10">
               {t("dashboard.ctaSubtitle")}
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center relative z-10">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center relative z-10">
               <button
                 onClick={() => onNavigate("auth")}
-                className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-12 py-5 rounded-lg font-bold text-lg uppercase tracking-widest shadow-2xl shadow-primary/20 hover:scale-[1.05] transition-transform"
+                className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-8 sm:px-12 py-4 sm:py-5 rounded-lg font-bold text-base sm:text-lg uppercase tracking-widest shadow-2xl shadow-primary/20 hover:scale-[1.05] transition-transform"
               >
                 {t("dashboard.createAccount")}
               </button>
               <button
                 onClick={() => onNavigate("strategies")}
-                className="bg-surface-bright text-on-surface border border-outline-variant/20 px-12 py-5 rounded-lg font-bold text-lg uppercase tracking-widest hover:bg-surface-container-highest transition-colors"
+                className="bg-surface-bright text-on-surface border border-outline-variant/20 px-8 sm:px-12 py-4 sm:py-5 rounded-lg font-bold text-base sm:text-lg uppercase tracking-widest hover:bg-surface-container-highest transition-colors"
               >
                 {t("dashboard.exploreStrategies")}
               </button>

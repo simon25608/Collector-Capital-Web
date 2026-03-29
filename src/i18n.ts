@@ -49,6 +49,7 @@ const resources = {
         viewLedger: "View Public Ledger",
         featuredStrategy: "Featured Strategy",
         institutionalExcellence: "Institutional Excellence",
+        strategyWord: "Strategy",
         createAccount: "Create Account",
         exploreStrategies: "Explore Strategies",
         cumulativeGain: "Cumulative Gain",
@@ -136,6 +137,7 @@ const resources = {
         investInStrategy: "Invest in Strategy",
         investmentAmount: "Investment Amount",
         projectedReturns: "Projected Returns (12M)",
+        sharpeRatio: "Sharpe Ratio",
         estBalance: "Est. Balance",
         performanceFee: "Performance Fee",
         minimumTerm: "Minimum Term",
@@ -145,6 +147,10 @@ const resources = {
         confirmInvestment: "Confirm Investment",
         riskWarning:
           "Past performance is not indicative of future results. Trading involves significant risk of loss.",
+        veryHigh: "Very High",
+        minutes: "minutes",
+        tradingStyleDesc:
+          "High-frequency scalping strategy focused on micro price movements in major forex pairs. Positions are typically closed within the same session, eliminating overnight exposure.",
         viewFirmProfile: "View Firm Profile",
         comingSoonTitle: "Coming Soon",
         comingSoonDesc:
@@ -356,6 +362,7 @@ const resources = {
         viewLedger: "Ver Libro Mayor Público",
         featuredStrategy: "Estrategia Destacada",
         institutionalExcellence: "Excelencia Institucional",
+        strategyWord: "Estrategia",
         createAccount: "Crear Cuenta",
         exploreStrategies: "Explorar Estrategias",
         cumulativeGain: "Ganancia Acumulada",
@@ -444,6 +451,7 @@ const resources = {
         investInStrategy: "Invertir en Estrategia",
         investmentAmount: "Monto de Inversión",
         projectedReturns: "Retornos Proyectados (12M)",
+        sharpeRatio: "Ratio de Sharpe",
         estBalance: "Balance Est.",
         performanceFee: "Comisión de Rendimiento",
         minimumTerm: "Plazo Mínimo",
@@ -453,6 +461,10 @@ const resources = {
         confirmInvestment: "Confirmar Inversión",
         riskWarning:
           "El rendimiento pasado no es indicativo de resultados futuros. El trading implica un riesgo significativo de pérdida.",
+        veryHigh: "Muy Alto",
+        minutes: "minutos",
+        tradingStyleDesc:
+          "Estrategia de scalping de alta frecuencia centrada en micro movimientos de precios en los principales pares de divisas. Las posiciones se cierran normalmente dentro de la misma sesión, eliminando la exposición nocturna.",
         viewFirmProfile: "Ver Perfil de la Firma",
         comingSoonTitle: "Próximamente",
         comingSoonDesc:

@@ -1,23 +1,48 @@
-import { Bell, Settings, User, Search, Landmark, Globe, LogOut } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useTranslation } from 'react-i18next';
-import { Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { useState, useRef, useEffect } from 'react';
+import {
+  Bell,
+  Settings,
+  User,
+  Search,
+  Landmark,
+  Globe,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
+import { Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
+import { useState, useRef, useEffect } from "react";
 
-export function Navbar({ currentView, setView, session }: { currentView: string, setView: (view: string, id?: string) => void, session: Session | null }) {
+export function Navbar({
+  currentView,
+  setView,
+  session,
+}: {
+  currentView: string;
+  setView: (view: string, id?: string) => void;
+  session: Session | null;
+}) {
   const { t, i18n } = useTranslation();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const settingsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (notificationRef.current && !notificationRef.current.contains(event.target as Node)) {
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(event.target as Node)
+      ) {
         setShowNotifications(false);
       }
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+      if (
+        settingsRef.current &&
+        !settingsRef.current.contains(event.target as Node)
+      ) {
         setShowSettings(false);
       }
     }
@@ -26,155 +51,249 @@ export function Navbar({ currentView, setView, session }: { currentView: string,
   }, []);
 
   const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'en' ? 'es' : 'en');
+    i18n.changeLanguage(i18n.language === "en" ? "es" : "en");
   };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    setView('dashboard');
+    setView("dashboard");
+    setShowMobileMenu(false);
+  };
+
+  const handleMobileNav = (view: string) => {
+    setView(view);
+    setShowMobileMenu(false);
   };
 
   return (
-    <nav className="print:hidden fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md flex items-center justify-between px-8 h-16 border-b border-white/5">
-      <div className="flex items-center gap-8">
-        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
-          <Landmark className="text-primary w-6 h-6" />
-          <span className="text-xl font-bold tracking-tighter text-on-surface">CollectorCapital</span>
-        </div>
-        <div className="hidden md:flex gap-6">
-          <button 
-            onClick={() => setView('dashboard')}
-            className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === 'dashboard' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-          >
-            {t('navbar.dashboard')}
-          </button>
-          <button 
-            onClick={() => setView('strategies')}
-            className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === 'strategies' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-          >
-            {t('navbar.strategies')}
-          </button>
-          <button 
-            onClick={() => setView('support')}
-            className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === 'support' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-          >
-            {t('navbar.support')}
-          </button>
-          <button 
-            onClick={() => setView('contact')}
-            className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === 'contact' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-          >
-            {t('navbar.contact')}
-          </button>
-          <button 
-            onClick={() => setView('legal')}
-            className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === 'legal' ? 'text-primary border-b-2 border-primary' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-          >
-            {t('navbar.legal')}
-          </button>
-        </div>
-      </div>
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={toggleLanguage}
-          className="flex items-center gap-1 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest px-2 py-1.5 rounded transition-colors"
-          title="Toggle Language"
-        >
-          <Globe className="w-4 h-4" />
-          {i18n.language === 'en' ? 'EN' : 'ES'}
-        </button>
-        {currentView !== 'auth' && (
-          <>
-            {/* Search bar hidden for now */}
-            <div className="hidden items-center bg-surface-container-high rounded-lg px-3 py-1.5 gap-2">
-              <Search className="text-on-surface-variant w-4 h-4" />
-              <input 
-                type="text" 
-                placeholder={t('navbar.search')} 
-                className="bg-transparent border-none text-sm text-on-surface focus:ring-0 placeholder:text-on-surface-variant w-48 outline-none"
-              />
+    <nav className="print:hidden fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md border-b border-white/5">
+      <div className="flex items-center justify-between px-4 sm:px-8 h-16">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <div
+              className="flex items-center gap-2 cursor-pointer"
+              onClick={() => setView("dashboard")}
+            >
+              <Landmark className="text-primary w-6 h-6" />
+              <span className="text-xl font-bold tracking-tighter text-on-surface hidden sm:inline">
+                CollectorCapital
+              </span>
             </div>
-            {session && (
-              <div className="flex items-center gap-2">
-                <div className="relative" ref={notificationRef}>
-                  <button 
-                    onClick={() => setShowNotifications(!showNotifications)}
-                    className={`p-2 rounded-full transition-colors ${showNotifications ? 'bg-surface-container-highest text-on-surface' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-                  >
-                    <Bell className="w-5 h-5" />
-                  </button>
-                  
-                  {showNotifications && (
-                    <div className="absolute right-0 mt-2 w-80 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
-                      <div className="p-4 border-b border-outline-variant/10">
-                        <h3 className="font-semibold text-on-surface">{t('navbar.notifications')}</h3>
-                      </div>
-                      <div className="p-8 text-center flex flex-col items-center justify-center">
-                        <Bell className="w-8 h-8 text-on-surface-variant/30 mb-3" />
-                        <p className="text-on-surface-variant text-sm">{t('navbar.noNotifications')}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-                <div className="relative" ref={settingsRef}>
-                  <button 
-                    onClick={() => setShowSettings(!showSettings)}
-                    className={`p-2 rounded-full transition-colors ${showSettings ? 'bg-surface-container-highest text-on-surface' : 'text-on-surface-variant hover:bg-surface-container-highest'}`}
-                    title={t('navbar.settings')}
-                  >
-                    <Settings className="w-5 h-5" />
-                  </button>
-                  
-                  {showSettings && (
-                    <div className="absolute right-0 mt-2 w-56 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
-                      <div className="p-2 flex flex-col gap-1">
-                        <button 
-                          onClick={() => { setView('profile'); setShowSettings(false); }} 
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-highest rounded-lg transition-colors"
-                        >
-                          {t('navbar.profileSettings')}
-                        </button>
-                        <button 
-                          onClick={() => { setView('watchlist'); setShowSettings(false); }} 
-                          className="w-full text-left px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-highest rounded-lg transition-colors"
-                        >
-                          {t('navbar.myWatchlist')}
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+            {/* Hamburger button - only on mobile, next to logo */}
+            {currentView !== "auth" && (
+              <button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="md:hidden p-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                aria-label="Toggle menu"
+              >
+                {showMobileMenu ? (
+                  <X className="w-5 h-5" />
+                ) : (
+                  <Menu className="w-5 h-5" />
+                )}
+              </button>
             )}
-            {session ? (
-              <div className="flex items-center gap-4 ml-2">
+          </div>
+          <div className="hidden md:flex gap-6">
+            <button
+              onClick={() => setView("dashboard")}
+              className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === "dashboard" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+            >
+              {t("navbar.dashboard")}
+            </button>
+            <button
+              onClick={() => setView("strategies")}
+              className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === "strategies" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+            >
+              {t("navbar.strategies")}
+            </button>
+            <button
+              onClick={() => setView("support")}
+              className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === "support" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+            >
+              {t("navbar.support")}
+            </button>
+            <button
+              onClick={() => setView("contact")}
+              className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === "contact" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+            >
+              {t("navbar.contact")}
+            </button>
+            <button
+              onClick={() => setView("legal")}
+              className={`font-medium transition-colors duration-200 px-3 py-1 rounded ${currentView === "legal" ? "text-primary border-b-2 border-primary" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+            >
+              {t("navbar.legal")}
+            </button>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+          <button
+            onClick={toggleLanguage}
+            className="flex items-center gap-1 text-sm font-medium text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest px-2 py-1.5 rounded transition-colors"
+            title="Toggle Language"
+          >
+            <Globe className="w-4 h-4" />
+            {i18n.language === "en" ? "EN" : "ES"}
+          </button>
+          {currentView !== "auth" && (
+            <>
+              {/* Search bar hidden for now */}
+              <div className="hidden items-center bg-surface-container-high rounded-lg px-3 py-1.5 gap-2">
+                <Search className="text-on-surface-variant w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder={t("navbar.search")}
+                  className="bg-transparent border-none text-sm text-on-surface focus:ring-0 placeholder:text-on-surface-variant w-48 outline-none"
+                />
+              </div>
+              {session && (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
-                    <User className="w-4 h-4 text-primary" />
+                  <div className="relative" ref={notificationRef}>
+                    <button
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className={`p-2 rounded-full transition-colors ${showNotifications ? "bg-surface-container-highest text-on-surface" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+                    >
+                      <Bell className="w-5 h-5" />
+                    </button>
+
+                    {showNotifications && (
+                      <div className="absolute right-0 mt-2 w-80 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
+                        <div className="p-4 border-b border-outline-variant/10">
+                          <h3 className="font-semibold text-on-surface">
+                            {t("navbar.notifications")}
+                          </h3>
+                        </div>
+                        <div className="p-8 text-center flex flex-col items-center justify-center">
+                          <Bell className="w-8 h-8 text-on-surface-variant/30 mb-3" />
+                          <p className="text-on-surface-variant text-sm">
+                            {t("navbar.noNotifications")}
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <span className="text-sm font-medium text-on-surface hidden lg:block">
-                    {session.user.email}
-                  </span>
+                  <div className="relative" ref={settingsRef}>
+                    <button
+                      onClick={() => setShowSettings(!showSettings)}
+                      className={`p-2 rounded-full transition-colors ${showSettings ? "bg-surface-container-highest text-on-surface" : "text-on-surface-variant hover:bg-surface-container-highest"}`}
+                      title={t("navbar.settings")}
+                    >
+                      <Settings className="w-5 h-5" />
+                    </button>
+
+                    {showSettings && (
+                      <div className="absolute right-0 mt-2 w-56 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
+                        <div className="p-2 flex flex-col gap-1">
+                          <button
+                            onClick={() => {
+                              setView("profile");
+                              setShowSettings(false);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-highest rounded-lg transition-colors"
+                          >
+                            {t("navbar.profileSettings")}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setView("watchlist");
+                              setShowSettings(false);
+                            }}
+                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-on-surface hover:bg-surface-container-highest rounded-lg transition-colors"
+                          >
+                            {t("navbar.myWatchlist")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <button 
-                  onClick={handleSignOut}
-                  className="text-on-surface-variant hover:text-error hover:bg-error/10 p-2 rounded-full transition-colors"
-                  title="Sign Out"
+              )}
+              {session ? (
+                <div className="flex items-center gap-4 ml-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
+                      <User className="w-4 h-4 text-primary" />
+                    </div>
+                    <span className="text-sm font-medium text-on-surface hidden lg:block">
+                      {session.user.email}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="text-on-surface-variant hover:text-error hover:bg-error/10 p-2 rounded-full transition-colors"
+                    title="Sign Out"
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <Button
+                  onClick={() => setView("auth")}
+                  className="px-4 sm:px-6 py-2 ml-1 sm:ml-2 text-sm sm:text-base"
                 >
-                  <LogOut className="w-5 h-5" />
-                </button>
-              </div>
-            ) : (
-              <Button onClick={() => setView('auth')} className="px-6 py-2 ml-2">
-                {t('navbar.signIn')}
-              </Button>
-            )}
-          </>
-        )}
-        {currentView === 'auth' && !session && (
-          <Button onClick={() => setView('dashboard')} className="px-5 py-2">{t('navbar.signIn')}</Button>
-        )}
+                  {t("navbar.signIn")}
+                </Button>
+              )}
+            </>
+          )}
+          {currentView === "auth" && !session && (
+            <Button
+              onClick={() => setView("dashboard")}
+              className="px-4 sm:px-5 py-2 text-sm sm:text-base"
+            >
+              {t("navbar.signIn")}
+            </Button>
+          )}
+        </div>
       </div>
+
+      {/* Mobile slide-down menu */}
+      {showMobileMenu && currentView !== "auth" && (
+        <div className="md:hidden bg-surface/95 backdrop-blur-md border-t border-white/5 px-4 pb-4 pt-2 flex flex-col gap-1">
+          {[
+            { view: "dashboard", label: t("navbar.dashboard") },
+            { view: "strategies", label: t("navbar.strategies") },
+            { view: "support", label: t("navbar.support") },
+            { view: "contact", label: t("navbar.contact") },
+            { view: "legal", label: t("navbar.legal") },
+          ].map(({ view, label }) => (
+            <button
+              key={view}
+              onClick={() => handleMobileNav(view)}
+              className={`w-full text-left px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                currentView === view
+                  ? "bg-primary/10 text-primary"
+                  : "text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+          {session && (
+            <div className="mt-2 pt-2 border-t border-outline-variant/15 flex flex-col gap-1">
+              <button
+                onClick={() => handleMobileNav("profile")}
+                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
+              >
+                {t("navbar.profileSettings")}
+              </button>
+              <button
+                onClick={() => handleMobileNav("watchlist")}
+                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
+              >
+                {t("navbar.myWatchlist")}
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </nav>
-  )
+  );
 }
