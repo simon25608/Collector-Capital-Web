@@ -87,6 +87,11 @@ const resources = {
         ctaTitle: "Start Your Architecture of Wealth Today",
         ctaSubtitle:
           "Join thousands of verified investors accessing institutional-grade strategies with zero barriers to entry.",
+        fetchError: "An error occurred loading data. Please refresh and try again.",
+        staticStrategy1Name: "Alpha Momentum",
+        staticStrategy2Name: "Global Macro",
+        staticStrategy1Return: "+42.18%",
+        staticStrategy2Return: "+12.40%",
       },
       strategies: {
         title: "Investment Strategies",
@@ -403,6 +408,11 @@ const resources = {
         ctaTitle: "Comience su Arquitectura de Riqueza Hoy",
         ctaSubtitle:
           "Únase a miles de inversores verificados que acceden a estrategias de grado institucional sin barreras de entrada.",
+        fetchError: "Ocurrió un error al cargar los datos. Por favor, recargue la página.",
+        staticStrategy1Name: "Alpha Momentum",
+        staticStrategy2Name: "Global Macro",
+        staticStrategy1Return: "+42.18%",
+        staticStrategy2Return: "+12.40%",
       },
       strategies: {
         title: "Estrategias de Inversión",

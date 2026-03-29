@@ -11,7 +11,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { getRiskLevel } from "@/lib/utils";
 
@@ -43,7 +43,7 @@ interface Strategy {
   profit_factor: number;
   investors: number;
   aum: string;
-  chart_data: any;
+  chart_data?: unknown;
   is_featured: boolean;
 }
 
@@ -54,6 +54,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
     null,
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -63,34 +64,36 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
       }
 
       try {
-        // Fetch strategies for catalog
-        const { data: strategiesData, error: strategiesError } = await supabase
-          .from("trading_strategies")
-          .select("*")
-          .eq("is_visible", true)
-          .order("monthly_return", { ascending: false })
-          .limit(3);
+        const [
+          { data: strategiesData, error: strategiesError },
+          { data: featuredData, error: featuredError },
+        ] = await Promise.all([
+          supabase
+            .from("trading_strategies")
+            .select("*")
+            .eq("is_visible", true)
+            .order("monthly_return", { ascending: false })
+            .limit(3),
+          supabase
+            .from("trading_strategies")
+            .select("*")
+            .eq("is_featured", true)
+            .eq("is_visible", true)
+            .maybeSingle(),
+        ]);
 
         if (strategiesError) throw strategiesError;
-        if (strategiesData) setStrategies(strategiesData);
-
-        // Fetch featured strategy
-        const { data: featuredData, error: featuredError } = await supabase
-          .from("trading_strategies")
-          .select("*")
-          .eq("is_featured", true)
-          .eq("is_visible", true)
-          .maybeSingle();
-
         if (featuredError) throw featuredError;
+
+        if (strategiesData) setStrategies(strategiesData);
         if (featuredData) {
           setFeaturedStrategy(featuredData);
         } else if (strategiesData && strategiesData.length > 0) {
-          // Fallback to the best performing one if none is marked as featured
           setFeaturedStrategy(strategiesData[0]);
         }
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
+        setError(true);
       } finally {
         setLoading(false);
       }
@@ -99,15 +102,25 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
     fetchData();
   }, []);
 
+  const sparklineData = useMemo(
+    () => new Map(strategies.map((s) => [s.id, getSparklineBars(s)])),
+    [strategies],
+  );
+
   return (
     <main className="min-h-screen">
+      {error && (
+        <div className="max-w-7xl mx-auto px-4 py-8 text-center">
+          <p className="text-tertiary">{t("dashboard.fetchError")}</p>
+        </div>
+      )}
       {/* Hero Section: Featured Strategy */}
       <section className="relative px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32 overflow-hidden">
         <div
           className="absolute top-0 right-0 -z-10 w-2/3 h-full opacity-20 pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle at 70% 30%, #4edea3 0%, transparent 70%)",
+              "radial-gradient(circle at 70% 30%, var(--color-primary) 0%, transparent 70%)",
           }}
         ></div>
         {loading ? (
@@ -140,7 +153,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     {t("dashboard.cumulativeGain")}
                   </p>
                   <p className="text-3xl sm:text-4xl font-bold text-primary">
-                    +{featuredStrategy?.monthly_return.toFixed(2)}%
+                    {featuredStrategy
+                      ? `+${featuredStrategy.monthly_return.toFixed(2)}%`
+                      : "—"}
                   </p>
                 </div>
                 <div className="text-center sm:text-left">
@@ -231,10 +246,10 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               strategies.map((strategy) => {
                 const risk = getRiskLevel(strategy.drawdown);
                 return (
-                  <div
+                  <button
                     key={strategy.id}
                     onClick={() => onNavigate("strategy-detail", strategy.id)}
-                    className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
+                    className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5 text-left w-full"
                   >
                     <div className="flex justify-between items-start mb-6">
                       <div>
@@ -252,9 +267,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                       </div>
                     </div>
                     <div className="mb-6 h-12 flex items-end gap-0.5 overflow-hidden rounded">
-                      {getSparklineBars(strategy).map((h, i) => (
+                      {(sparklineData.get(strategy.id) ?? []).map((h, i) => (
                         <div
-                          key={i}
+                          key={`${strategy.id}-bar-${i}`}
                           style={{ height: `${h}%` }}
                           className={`w-full rounded-t-sm ${
                             i === 7
@@ -273,25 +288,25 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                           +{strategy.monthly_return.toFixed(2)}%
                         </p>
                       </div>
-                      <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
+                      <span className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
                         {t("dashboard.explore")}
-                      </button>
+                      </span>
                     </div>
-                  </div>
+                  </button>
                 );
               })
             ) : (
               // Fallback static cards if no database connection
               <>
                 {/* Strategy Card 1 */}
-                <div
+                <button
                   onClick={() => onNavigate("strategy-detail", "static-1")}
-                  className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
+                  className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5 text-left w-full"
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div>
                       <h4 className="text-lg font-bold group-hover:text-primary transition-colors">
-                        Alpha Momentum
+                        {t("dashboard.staticStrategy1Name")}
                       </h4>
                       <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
                         {t("dashboard.moderateRisk")}
@@ -313,23 +328,23 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                       <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                         {t("dashboard.totalReturn")}
                       </p>
-                      <p className="text-2xl font-bold text-primary">+42.18%</p>
+                      <p className="text-2xl font-bold text-primary">{t("dashboard.staticStrategy1Return")}</p>
                     </div>
-                    <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
+                    <span className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
                       {t("dashboard.explore")}
-                    </button>
+                    </span>
                   </div>
-                </div>
+                </button>
 
                 {/* Strategy Card 2 */}
-                <div
+                <button
                   onClick={() => onNavigate("strategy-detail", "static-2")}
-                  className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5"
+                  className="bg-surface-container-high p-5 sm:p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5 text-left w-full"
                 >
                   <div className="flex justify-between items-start mb-6">
                     <div>
                       <h4 className="text-lg font-bold group-hover:text-primary transition-colors">
-                        Global Macro
+                        {t("dashboard.staticStrategy2Name")}
                       </h4>
                       <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
                         {t("dashboard.lowRisk")}
@@ -351,13 +366,13 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                       <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                         {t("dashboard.totalReturn")}
                       </p>
-                      <p className="text-2xl font-bold text-primary">+12.40%</p>
+                      <p className="text-2xl font-bold text-primary">{t("dashboard.staticStrategy2Return")}</p>
                     </div>
-                    <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
+                    <span className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
                       {t("dashboard.explore")}
-                    </button>
+                    </span>
                   </div>
-                </div>
+                </button>
               </>
             )}
           </div>
@@ -370,7 +385,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
           className="absolute bottom-0 left-0 -z-10 w-1/2 h-full opacity-10 pointer-events-none"
           style={{
             background:
-              "radial-gradient(circle at 10% 80%, #adc6ff 0%, transparent 70%)",
+              "radial-gradient(circle at 10% 80%, var(--color-secondary) 0%, transparent 70%)",
           }}
         ></div>
         <div className="max-w-7xl mx-auto">
@@ -460,7 +475,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none"
               style={{
                 background:
-                  "linear-gradient(135deg, #10b981 0%, transparent 50%, #0566d9 100%)",
+                  "linear-gradient(135deg, var(--color-primary-container) 0%, transparent 50%, var(--color-secondary-container) 100%)",
               }}
             ></div>
             <h2 className="text-3xl sm:text-4xl lg:text-6xl font-bold mb-6 sm:mb-8 relative z-10">
