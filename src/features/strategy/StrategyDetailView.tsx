@@ -340,7 +340,7 @@ export function StrategyDetailView({
                     label: t("strategies.winRate"),
                     value: `${strategy.win_rate.toFixed(1)}%`,
                   },
-                    {
+                  {
                     label: t("dashboard.maxDrawdown"),
                     value: `${Math.abs(strategy.drawdown).toFixed(2)}%`,
                     isError: getRiskLevel(strategy.drawdown).filledBars > 6,

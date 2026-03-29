@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ArrowRight, Bookmark } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
-import { getRiskLevel } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { ArrowRight, Bookmark } from "lucide-react";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { getRiskLevel } from "@/lib/utils";
 
 export interface Strategy {
   id: string;
@@ -22,7 +22,10 @@ interface StrategyCardProps {
   onClick: () => void;
 }
 
-export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick }) => {
+export const StrategyCard: React.FC<StrategyCardProps> = ({
+  strategy,
+  onClick,
+}) => {
   const { t } = useTranslation();
   const [isWatchlisted, setIsWatchlisted] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
@@ -31,9 +34,11 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
   useEffect(() => {
     const checkWatchlistStatus = async () => {
       if (!isSupabaseConfigured) return;
-      
+
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
           setIsAuthenticated(false);
           return;
@@ -41,10 +46,10 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
         setIsAuthenticated(true);
 
         const { data, error } = await supabase
-          .from('user_watchlist')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('strategy_id', strategy.id)
+          .from("user_watchlist")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("strategy_id", strategy.id)
           .single();
 
         if (data) {
@@ -64,7 +69,9 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
 
     setIsToggling(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         // Optionally show a login prompt here
         setIsToggling(false);
@@ -74,23 +81,21 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
       if (isWatchlisted) {
         // Remove from watchlist
         await supabase
-          .from('user_watchlist')
+          .from("user_watchlist")
           .delete()
-          .eq('user_id', user.id)
-          .eq('strategy_id', strategy.id);
+          .eq("user_id", user.id)
+          .eq("strategy_id", strategy.id);
         setIsWatchlisted(false);
       } else {
         // Add to watchlist
-        await supabase
-          .from('user_watchlist')
-          .insert({
-            user_id: user.id,
-            strategy_id: strategy.id
-          });
+        await supabase.from("user_watchlist").insert({
+          user_id: user.id,
+          strategy_id: strategy.id,
+        });
         setIsWatchlisted(true);
       }
     } catch (err) {
-      console.error('Error toggling watchlist:', err);
+      console.error("Error toggling watchlist:", err);
     } finally {
       setIsToggling(false);
     }
@@ -99,25 +104,34 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
   const risk = getRiskLevel(strategy.drawdown);
 
   return (
-    <div 
+    <div
       className="bg-surface-container-low group hover:bg-surface-container transition-all duration-300 rounded-xl overflow-hidden flex flex-col cursor-pointer relative"
       onClick={onClick}
     >
       <div className="p-8 pb-4">
         <div className="flex justify-between items-start mb-6">
           <div className="min-w-0 flex-1 pr-4">
-            <span className={`text-[0.6875rem] uppercase tracking-wider font-bold mb-1 block ${risk.colorClass}`}>
+            <span
+              className={`text-[0.6875rem] uppercase tracking-wider font-bold mb-1 block ${risk.colorClass}`}
+            >
               {t(risk.dashboardKey)}
             </span>
-            <h3 className="text-xl font-bold text-on-surface truncate">{strategy.display_name || strategy.name}</h3>
+            <h3 className="text-xl font-bold text-on-surface truncate">
+              {strategy.display_name || strategy.name}
+            </h3>
             <div className="flex gap-0.5 mt-2">
               {[...Array(10)].map((_, i) => (
-                <span key={i} className={`w-full h-1 rounded-full ${i < risk.filledBars ? risk.barColorClass : 'bg-surface-container-highest'}`}></span>
+                <span
+                  key={i}
+                  className={`w-full h-1 rounded-full ${i < risk.filledBars ? risk.barColorClass : "bg-surface-container-highest"}`}
+                ></span>
               ))}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className={`px-3 py-1 text-[0.6875rem] font-bold rounded-full border whitespace-nowrap ${risk.bgClass} ${risk.colorClass} ${risk.borderClass}`}>
+            <span
+              className={`px-3 py-1 text-[0.6875rem] font-bold rounded-full border whitespace-nowrap ${risk.bgClass} ${risk.colorClass} ${risk.borderClass}`}
+            >
               {t(risk.strategiesKey).toUpperCase()}
             </span>
             {isAuthenticated && (
@@ -125,18 +139,29 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
                 onClick={handleToggleWatchlist}
                 disabled={isToggling}
                 className="p-1.5 rounded-full bg-surface-container-highest/50 hover:bg-surface-container-highest transition-all text-on-surface-variant hover:text-primary disabled:opacity-50"
-                title={isWatchlisted ? t('watchlist.remove', 'Remove from watchlist') : t('watchlist.add', 'Add to watchlist')}
+                title={
+                  isWatchlisted
+                    ? t("watchlist.remove", "Remove from watchlist")
+                    : t("watchlist.add", "Add to watchlist")
+                }
               >
-                <Bookmark className={`w-4 h-4 ${isWatchlisted ? 'fill-primary text-primary' : ''}`} />
+                <Bookmark
+                  className={`w-4 h-4 ${isWatchlisted ? "fill-primary text-primary" : ""}`}
+                />
               </button>
             )}
           </div>
         </div>
         <div className="flex items-end justify-between gap-4 mb-6">
           <div>
-            <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">{t('dashboard.monthlyReturn')}</span>
-            <span className={`text-3xl font-bold ${strategy.monthly_return >= 0 ? 'text-primary' : 'text-tertiary'}`}>
-              {strategy.monthly_return >= 0 ? '+' : ''}{strategy.monthly_return.toFixed(2)}%
+            <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">
+              {t("dashboard.monthlyReturn")}
+            </span>
+            <span
+              className={`text-3xl font-bold ${strategy.monthly_return >= 0 ? "text-primary" : "text-tertiary"}`}
+            >
+              {strategy.monthly_return >= 0 ? "+" : ""}
+              {strategy.monthly_return.toFixed(2)}%
             </span>
           </div>
           {/* Mock Sparkline */}
@@ -152,21 +177,27 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
       <div className="mt-auto px-8 pb-8">
         <div className="grid grid-cols-2 gap-4 mb-6 pt-6 border-t border-outline-variant/10">
           <div>
-            <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">{t('dashboard.maxDrawdown')}</span>
-            <span className="text-sm font-bold text-on-surface">{Math.abs(strategy.drawdown).toFixed(2)}%</span>
+            <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">
+              {t("dashboard.maxDrawdown")}
+            </span>
+            <span className="text-sm font-bold text-on-surface">
+              {Math.abs(strategy.drawdown).toFixed(2)}%
+            </span>
           </div>
           <div>
-            <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">{t('dashboard.investors')}</span>
-            <span className="text-sm font-bold text-on-surface">{strategy.investors.toLocaleString()}</span>
+            <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">
+              {t("dashboard.investors")}
+            </span>
+            <span className="text-sm font-bold text-on-surface">
+              {strategy.investors.toLocaleString()}
+            </span>
           </div>
         </div>
-        <button 
-          className="w-full flex items-center justify-between px-6 py-3.5 bg-surface-container-highest hover:bg-primary/10 text-on-surface hover:text-primary rounded-xl font-bold transition-all border border-outline-variant/10 hover:border-primary/30 group-hover:shadow-[0_0_20px_rgba(78,222,163,0.1)]"
-        >
-          {t('dashboard.explore')}
+        <button className="w-full flex items-center justify-between px-6 py-3.5 bg-surface-container-highest hover:bg-primary/10 text-on-surface hover:text-primary rounded-xl font-bold transition-all border border-outline-variant/10 hover:border-primary/30 group-hover:shadow-[0_0_20px_rgba(78,222,163,0.1)]">
+          {t("dashboard.explore")}
           <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </button>
       </div>
     </div>
   );
-}
+};
