@@ -32,6 +32,7 @@ export function StrategyListView({ onNavigate }: StrategyListViewProps) {
         const { data, error } = await supabase
           .from('trading_strategies')
           .select('*')
+          .eq('is_visible', true)
           .order('monthly_return', { ascending: false });
 
         if (error) {
@@ -53,19 +54,28 @@ export function StrategyListView({ onNavigate }: StrategyListViewProps) {
 
   const filteredStrategies = strategies.filter(strategy => {
     // Search filter
-    if (searchTerm && !strategy.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+    const searchLower = searchTerm.toLowerCase();
+    const nameMatch = strategy.name.toLowerCase().includes(searchLower);
+    const displayNameMatch = strategy.display_name?.toLowerCase().includes(searchLower);
+    
+    if (searchTerm && !nameMatch && !displayNameMatch) {
       return false;
     }
     
     // Risk filter
     if (riskFilter !== 'all') {
-      const isLow = strategy.drawdown <= 8;
-      const isMedium = strategy.drawdown > 8 && strategy.drawdown <= 15;
-      const isHigh = strategy.drawdown > 15;
+      const drawdownValue = Math.abs(Number(strategy.drawdown));
+      const isMinimal = drawdownValue <= 20;
+      const isLow = drawdownValue > 20 && drawdownValue <= 40;
+      const isModerate = drawdownValue > 40 && drawdownValue <= 60;
+      const isHigh = drawdownValue > 60 && drawdownValue <= 80;
+      const isExtreme = drawdownValue > 80;
       
+      if (riskFilter === 'minimal' && !isMinimal) return false;
       if (riskFilter === 'low' && !isLow) return false;
-      if (riskFilter === 'medium' && !isMedium) return false;
+      if (riskFilter === 'moderate' && !isModerate) return false;
       if (riskFilter === 'high' && !isHigh) return false;
+      if (riskFilter === 'extreme' && !isExtreme) return false;
     }
     
     // Return filter
@@ -118,9 +128,11 @@ export function StrategyListView({ onNavigate }: StrategyListViewProps) {
                 className="bg-surface-container-highest border-none rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-secondary/20 min-w-[140px] outline-none text-on-surface"
               >
                 <option value="all">{t('strategies.allRisks')}</option>
+                <option value="minimal">{t('strategies.minimal')}</option>
                 <option value="low">{t('strategies.low')}</option>
-                <option value="medium">{t('strategies.medium')}</option>
+                <option value="moderate">{t('strategies.moderate')}</option>
                 <option value="high">{t('strategies.high')}</option>
+                <option value="extreme">{t('strategies.extreme')}</option>
               </select>
             </div>
             <div className="flex flex-col gap-1">
@@ -194,7 +206,7 @@ export function StrategyListView({ onNavigate }: StrategyListViewProps) {
                     <span className="text-[0.6875rem] uppercase tracking-wider font-bold text-primary mb-1 block">Institutional</span>
                     <h3 className="text-xl font-bold text-on-surface">Alpha Scalper</h3>
                   </div>
-                  <span className="px-3 py-1 bg-tertiary-container/10 text-tertiary text-[0.6875rem] font-bold rounded-full border border-tertiary/20">HIGH RISK</span>
+                  <span className="px-3 py-1 bg-tertiary-container/10 text-tertiary text-[0.6875rem] font-bold rounded-full border border-tertiary/20">{t('dashboard.highRisk').toUpperCase()}</span>
                 </div>
                 <div className="flex items-end justify-between gap-4 mb-6">
                   <div>

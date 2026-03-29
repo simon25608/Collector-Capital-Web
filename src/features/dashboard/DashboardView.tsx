@@ -2,6 +2,7 @@ import { TrendingUp, Globe, Zap, Landmark, Monitor, Droplet, ShieldCheck, Layers
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getRiskLevel } from '@/lib/utils';
 
 interface DashboardViewProps {
   onNavigate: (view: string, id?: string) => void;
@@ -10,6 +11,7 @@ interface DashboardViewProps {
 interface Strategy {
   id: string;
   name: string;
+  display_name?: string;
   monthly_return: number;
   win_rate: number;
   drawdown: number;
@@ -38,6 +40,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
         const { data: strategiesData, error: strategiesError } = await supabase
           .from('trading_strategies')
           .select('*')
+          .eq('is_visible', true)
           .order('monthly_return', { ascending: false })
           .limit(6);
 
@@ -49,6 +52,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
           .from('trading_strategies')
           .select('*')
           .eq('is_featured', true)
+          .eq('is_visible', true)
           .maybeSingle();
 
         if (featuredError) throw featuredError;
@@ -80,7 +84,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">{t('dashboard.featuredStrategy')}</span>
             </div>
             <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-on-surface leading-[1.1]">
-              {featuredStrategy?.name || t('dashboard.heroTitle')} <span className="text-primary">Strategy</span>
+              {(featuredStrategy?.display_name || featuredStrategy?.name) || t('dashboard.heroTitle')} <span className="text-primary">Strategy</span>
             </h1>
             <p className="text-lg text-on-surface-variant max-w-xl leading-relaxed">
               {t('dashboard.heroSubtitle')}
@@ -158,13 +162,15 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
               </div>
             ) : strategies.length > 0 ? (
-              strategies.map((strategy) => (
+              strategies.map((strategy) => {
+                const risk = getRiskLevel(strategy.drawdown);
+                return (
                 <div key={strategy.id} onClick={() => onNavigate('strategy-detail', strategy.id)} className="bg-surface-container-high p-8 rounded-xl hover:translate-y-[-4px] transition-transform duration-300 group cursor-pointer border border-outline-variant/5">
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h4 className="text-lg font-bold group-hover:text-primary transition-colors">{strategy.name}</h4>
-                      <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
-                        {strategy.drawdown > 15 ? t('dashboard.highRisk') : strategy.drawdown > 8 ? t('dashboard.mediumRisk') : t('dashboard.lowRisk')}
+                      <h4 className="text-lg font-bold group-hover:text-primary transition-colors">{strategy.display_name || strategy.name}</h4>
+                      <span className={`text-[0.6875rem] font-medium uppercase tracking-widest ${risk.colorClass}`}>
+                        {t(risk.dashboardKey)}
                       </span>
                     </div>
                     <div className="bg-surface-container-highest p-2 rounded-lg">
@@ -173,7 +179,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   </div>
                   <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
                     {/* Placeholder for dynamic chart, using static image for MVP */}
-                    <img alt={`${strategy.name} Chart`} className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWLeAdXhicGod-KaHisf8hyv9ufCBld7ZIoJkKfJOKEbYZUJYKoGpSqp4GnWdCrZeX_WfjjQgueGanuhlCU2hhe8mDJuAx0Yl8V7J-n64ckj_bKvGJYgs-x76UcK6xnSLPimkMES4O091nF8dMFFWYztEAaS2txWIEfp8YTtCqgqVG2MpphHQCG5ny6mc2wmHK5-37tT5grFSdYwI2yjT1gMCR_yhvxbaM9RxtbhAapIXkH2QiKhQrYSJpEbVqqWVyzMZwYdfGmGI"/>
+                    <img alt={`${strategy.display_name || strategy.name} Chart`} className="w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWLeAdXhicGod-KaHisf8hyv9ufCBld7ZIoJkKfJOKEbYZUJYKoGpSqp4GnWdCrZeX_WfjjQgueGanuhlCU2hhe8mDJuAx0Yl8V7J-n64ckj_bKvGJYgs-x76UcK6xnSLPimkMES4O091nF8dMFFWYztEAaS2txWIEfp8YTtCqgqVG2MpphHQCG5ny6mc2wmHK5-37tT5grFSdYwI2yjT1gMCR_yhvxbaM9RxtbhAapIXkH2QiKhQrYSJpEbVqqWVyzMZwYdfGmGI"/>
                   </div>
                   <div className="flex justify-between items-end">
                     <div>
@@ -183,7 +189,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     <button className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">Explore</button>
                   </div>
                 </div>
-              ))
+              )})
             ) : (
               // Fallback static cards if no database connection
               <>

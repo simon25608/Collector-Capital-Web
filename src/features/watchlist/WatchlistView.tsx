@@ -31,10 +31,10 @@ export function WatchlistView({ onNavigate }: { onNavigate: (view: string, id?: 
         if (error) throw error;
 
         if (data) {
-          // Extract the nested trading_strategies objects
+          // Extract the nested trading_strategies objects and filter out invisible ones
           const extractedStrategies = data
             .map(item => item.trading_strategies)
-            .filter(strategy => strategy !== null); // Filter out any nulls if a strategy was deleted
+            .filter(strategy => strategy !== null && (strategy as any).is_visible !== false); // Filter out any nulls if a strategy was deleted or is invisible
           setStrategies(extractedStrategies);
         }
       } catch (err: any) {

@@ -112,7 +112,6 @@ export function SupportView({ onNavigate }: SupportViewProps) {
             </div>
             <h3 className="text-lg font-bold mb-1">{t('support.priorityEmail')}</h3>
             <p className="text-on-surface-variant text-sm mb-3">{t('support.emailResponse')}</p>
-            <span className="text-primary font-mono font-medium">support@collectorcapital.global</span>
           </div>
           <div className="p-8 bg-surface-container-high rounded-xl hover:bg-surface-bright transition-all cursor-pointer">
             <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary mb-4">

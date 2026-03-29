@@ -1,13 +1,28 @@
 import { Calendar, Download, CheckCircle2, AlertTriangle, Gavel } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 export function LegalView({ setView }: { setView: (view: string) => void }) {
   const { t } = useTranslation();
+  const [showPreviewWarning, setShowPreviewWarning] = useState(false);
+
+  const handleDownloadPdf = () => {
+    try {
+      if (window.self !== window.top) {
+        setShowPreviewWarning(true);
+        setTimeout(() => setShowPreviewWarning(false), 8000);
+        return;
+      }
+      window.print();
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <main className="min-h-screen pt-24 pb-32">
-      <article className="max-w-3xl mx-auto px-6 lg:px-0">
+      <article id="legal-content" className="max-w-3xl mx-auto px-6 lg:px-0">
         {/* Hero Header */}
         <header className="mb-16 border-b border-outline-variant/10 pb-12">
           <div className="flex items-center gap-3 mb-6">
@@ -20,10 +35,23 @@ export function LegalView({ setView }: { setView: (view: string) => void }) {
               <Calendar className="w-4 h-4" />
               <span className="text-sm font-medium">{t('legal.lastUpdated')}</span>
             </div>
-            <Button variant="secondary" className="flex items-center justify-center gap-3 px-6 py-3 group">
-              <Download className="text-primary w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
-              <span className="text-sm font-bold uppercase tracking-wider">{t('legal.downloadPdf')}</span>
-            </Button>
+            <div id="download-btn-container" className="print:hidden relative flex flex-col items-end">
+              <Button onClick={handleDownloadPdf} variant="secondary" className="flex items-center justify-center gap-3 px-6 py-3 group">
+                <Download className="text-primary w-4 h-4 group-hover:translate-y-0.5 transition-transform" />
+                <span className="text-sm font-bold uppercase tracking-wider">{t('legal.downloadPdf')}</span>
+              </Button>
+              {showPreviewWarning && (
+                <div className="absolute top-full mt-3 right-0 w-72 p-4 bg-surface-container-highest border border-outline-variant/20 rounded-xl shadow-xl text-sm text-on-surface-variant z-50 animate-in fade-in slide-in-from-top-2 text-left">
+                  <p className="font-bold text-primary mb-1 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4" />
+                    Preview Restriction
+                  </p>
+                  <p className="leading-relaxed">
+                    PDF downloads are restricted in this preview window. Please <strong>open the app in a new tab</strong> (using the icon in the top right of the screen) to download, or press <kbd className="bg-surface px-1.5 py-0.5 rounded text-xs border border-outline-variant/30 font-mono">Ctrl+P</kbd>.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 
@@ -117,7 +145,7 @@ export function LegalView({ setView }: { setView: (view: string) => void }) {
         </div>
 
         {/* Contact Box */}
-        <footer className="mt-24 p-10 bg-surface-container-high rounded-3xl text-center flex flex-col items-center">
+        <footer id="contact-footer" className="print:hidden mt-24 p-10 bg-surface-container-high rounded-3xl text-center flex flex-col items-center">
           <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
             <Gavel className="text-primary w-8 h-8" />
           </div>

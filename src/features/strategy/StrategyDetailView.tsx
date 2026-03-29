@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import { getRiskLevel } from '@/lib/utils';
 
 interface StrategyDetailViewProps {
   onNavigate: (view: string, id?: string) => void;
@@ -15,6 +16,7 @@ interface StrategyDetailViewProps {
 interface Strategy {
   id: string;
   name: string;
+  display_name?: string;
   monthly_return: number;
   win_rate: number;
   drawdown: number;
@@ -68,7 +70,8 @@ export function StrategyDetailView({ onNavigate, strategyId }: StrategyDetailVie
       try {
         let query = supabase
           .from('trading_strategies')
-          .select('*');
+          .select('*')
+          .eq('is_visible', true);
           
         if (strategyId && !strategyId.startsWith('static-')) {
           query = query.eq('id', strategyId);
@@ -167,22 +170,22 @@ export function StrategyDetailView({ onNavigate, strategyId }: StrategyDetailVie
                     <Badge variant="primary" className="flex items-center gap-1">
                       <BadgeCheck className="w-3 h-3" /> {t('strategies.verified')}
                     </Badge>
-                    <Badge variant="secondary">
-                      {strategy.drawdown > 15 ? t('dashboard.highRisk') : strategy.drawdown > 8 ? t('dashboard.mediumRisk') : t('dashboard.lowRisk')}
+                    <Badge variant="secondary" className={`${getRiskLevel(strategy.drawdown).bgClass} ${getRiskLevel(strategy.drawdown).colorClass} border-none`}>
+                      {t(getRiskLevel(strategy.drawdown).dashboardKey)}
                     </Badge>
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">{strategy.name}</h1>
+                  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">{strategy.display_name || strategy.name}</h1>
                   <p className="text-on-surface-variant flex items-center gap-2">
                     {t('strategies.riskLevel')}: <span className="text-on-surface font-semibold">
-                      {strategy.drawdown > 15 ? t('strategies.high') : strategy.drawdown > 8 ? t('strategies.medium') : t('strategies.low')} ({strategy.drawdown.toFixed(1)}% DD)
+                      {t(getRiskLevel(strategy.drawdown).strategiesKey)} ({strategy.drawdown.toFixed(1)}% DD)
                     </span>
                     <span className="flex gap-0.5 ml-2">
                       {[...Array(10)].map((_, i) => {
-                        const filledBars = Math.max(1, Math.min(10, strategy.drawdown >= 95 ? 10 : Math.floor(strategy.drawdown / 10)));
+                        const risk = getRiskLevel(strategy.drawdown);
                         return (
                           <span key={i} className={`w-4 h-1 rounded-full ${
-                            i < filledBars
-                              ? (strategy.drawdown > 15 ? 'bg-tertiary' : strategy.drawdown > 8 ? 'bg-secondary' : 'bg-primary')
+                            i < risk.filledBars
+                              ? risk.barColorClass
                               : 'bg-surface-container-highest'
                           }`}></span>
                         );
@@ -255,7 +258,7 @@ export function StrategyDetailView({ onNavigate, strategyId }: StrategyDetailVie
                 {[
                   { label: t('strategies.profitFactor'), value: strategy.profit_factor.toFixed(2) },
                   { label: t('strategies.winRate'), value: `${strategy.win_rate.toFixed(1)}%` },
-                  { label: t('dashboard.maxDrawdown'), value: `${strategy.drawdown.toFixed(2)}%`, isError: strategy.drawdown > 15 },
+                  { label: t('dashboard.maxDrawdown'), value: `${strategy.drawdown.toFixed(2)}%`, isError: getRiskLevel(strategy.drawdown).filledBars > 6 },
                   { label: t('dashboard.investors'), value: strategy.investors.toLocaleString() },
                 ].map((stat) => (
                   <div key={stat.label} className="bg-surface-container-high p-5 rounded-xl">

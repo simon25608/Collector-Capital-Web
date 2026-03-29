@@ -4,7 +4,7 @@ export function Footer({ setView }: { setView: (view: string) => void }) {
   const { t } = useTranslation();
   
   return (
-    <footer className="bg-surface-container-lowest border-t border-outline-variant/10 py-12 px-8 mt-auto">
+    <footer className="print:hidden bg-surface-container-lowest border-t border-outline-variant/10 py-12 px-8 mt-auto">
       <div className="w-full flex flex-col md:flex-row justify-between gap-8">
         <div className="flex flex-col gap-4 max-w-xl lg:max-w-2xl">
           <div className="text-sm font-bold text-on-surface">Collector Capital</div>

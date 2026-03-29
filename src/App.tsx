@@ -92,7 +92,7 @@ export default function App() {
         {currentView === 'strategies' && <StrategyListView onNavigate={handleNavigate} />}
         {currentView === 'strategy-detail' && <StrategyDetailView onNavigate={handleNavigate} strategyId={selectedStrategyId} />}
         {currentView === 'support' && <SupportView onNavigate={handleNavigate} />}
-        {currentView === 'contact' && <ContactView />}
+        {currentView === 'contact' && <ContactView onNavigate={handleNavigate} />}
         {currentView === 'legal' && <LegalView setView={handleNavigate} />}
         {currentView === 'profile' && <ProfileView />}
         {currentView === 'watchlist' && <WatchlistView onNavigate={handleNavigate} />}

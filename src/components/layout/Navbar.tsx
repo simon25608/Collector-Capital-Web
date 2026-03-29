@@ -35,7 +35,7 @@ export function Navbar({ currentView, setView, session }: { currentView: string,
   };
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md flex items-center justify-between px-8 h-16 border-b border-white/5">
+    <nav className="print:hidden fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-md flex items-center justify-between px-8 h-16 border-b border-white/5">
       <div className="flex items-center gap-8">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
           <Landmark className="text-primary w-6 h-6" />

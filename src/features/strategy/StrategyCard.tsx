@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ArrowRight, Bookmark } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { getRiskLevel } from '@/lib/utils';
 
 export interface Strategy {
   id: string;
   name: string;
+  display_name?: string;
   monthly_return: number;
   win_rate: number;
   drawdown: number;
@@ -94,6 +96,8 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
     }
   };
 
+  const risk = getRiskLevel(strategy.drawdown);
+
   return (
     <div 
       className="bg-surface-container-low group hover:bg-surface-container transition-all duration-300 rounded-xl overflow-hidden flex flex-col cursor-pointer relative"
@@ -101,21 +105,20 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
     >
       <div className="p-8 pb-4">
         <div className="flex justify-between items-start mb-6">
-          <div className="pr-4">
-            <span className="text-[0.6875rem] uppercase tracking-wider font-bold text-primary mb-1 block">
-              {strategy.drawdown > 15 ? t('dashboard.highRisk') : strategy.drawdown > 8 ? t('dashboard.mediumRisk') : t('dashboard.lowRisk')}
+          <div className="min-w-0 flex-1 pr-4">
+            <span className={`text-[0.6875rem] uppercase tracking-wider font-bold mb-1 block ${risk.colorClass}`}>
+              {t(risk.dashboardKey)}
             </span>
-            <h3 className="text-xl font-bold text-on-surface">{strategy.name}</h3>
+            <h3 className="text-xl font-bold text-on-surface truncate">{strategy.display_name || strategy.name}</h3>
+            <div className="flex gap-0.5 mt-2">
+              {[...Array(10)].map((_, i) => (
+                <span key={i} className={`w-full h-1 rounded-full ${i < risk.filledBars ? risk.barColorClass : 'bg-surface-container-highest'}`}></span>
+              ))}
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={`px-3 py-1 text-[0.6875rem] font-bold rounded-full border ${
-              strategy.drawdown > 15 
-                ? 'bg-tertiary-container/10 text-tertiary border-tertiary/20' 
-                : strategy.drawdown > 8
-                ? 'bg-secondary-container/10 text-secondary border-secondary/20'
-                : 'bg-primary-container/10 text-primary border-primary/20'
-            }`}>
-              {strategy.drawdown > 15 ? t('dashboard.highRisk').toUpperCase() : strategy.drawdown > 8 ? t('dashboard.mediumRisk').toUpperCase() : t('dashboard.lowRisk').toUpperCase()}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <span className={`px-3 py-1 text-[0.6875rem] font-bold rounded-full border whitespace-nowrap ${risk.bgClass} ${risk.colorClass} ${risk.borderClass}`}>
+              {t(risk.strategiesKey).toUpperCase()}
             </span>
             {isAuthenticated && (
               <button

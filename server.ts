@@ -25,7 +25,7 @@ async function startServer() {
 
       const { data, error } = await resend.emails.send({
         from: 'Collector Capital <onboarding@resend.dev>', // Resend test domain
-        to: ['support@collectorcapital.global'], // Cambia esto a tu correo real
+        to: ['collectorcapitales@gmail.com'], // Cambia esto a tu correo real
         subject: `New Contact: ${subject}`,
         html: `
           <h3>New message from Collector Capital Contact Form</h3>

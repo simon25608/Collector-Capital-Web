@@ -2,15 +2,40 @@ import { Mail, MessageSquare, Phone, Loader2, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslation } from 'react-i18next';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Turnstile } from '@marsidev/react-turnstile';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 
-export function ContactView() {
+interface ContactViewProps {
+  onNavigate?: (view: string) => void;
+}
+
+export function ContactView({ onNavigate }: ContactViewProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [strategies, setStrategies] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchStrategies() {
+      if (!isSupabaseConfigured) return;
+      try {
+        const { data, error } = await supabase
+          .from('trading_strategies')
+          .select('name, display_name')
+          .eq('is_visible', true)
+          .order('name', { ascending: true });
+        if (!error && data) {
+          setStrategies(data);
+        }
+      } catch (err) {
+        console.error('Error fetching strategies:', err);
+      }
+    }
+    fetchStrategies();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -99,10 +124,19 @@ export function ContactView() {
               <div className="space-y-2">
                 <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.strategyInterest')}</label>
                 <select name="subject" required className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none">
-                  <option>{t('contact.forexSpot')}</option>
-                  <option>{t('contact.fixedIncome')}</option>
-                  <option>{t('contact.algoTrading')}</option>
-                  <option>{t('contact.portfolioAdvisory')}</option>
+                  {strategies.length > 0 ? (
+                    strategies.map((s, i) => (
+                      <option key={i} value={s.name}>{s.display_name || s.name}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option>{t('contact.forexSpot')}</option>
+                      <option>{t('contact.fixedIncome')}</option>
+                      <option>{t('contact.algoTrading')}</option>
+                      <option>{t('contact.portfolioAdvisory')}</option>
+                    </>
+                  )}
+                  <option value="Other">{t('contact.other')}</option>
                 </select>
               </div>
               <div className="space-y-2">
@@ -141,7 +175,6 @@ export function ContactView() {
                 <div>
                   <h3 className="text-lg font-bold mb-1">{t('contact.priorityEmail')}</h3>
                   <p className="text-on-surface-variant text-sm mb-3">{t('contact.emailResponse')}</p>
-                  <span className="text-primary font-mono font-medium">support@collectorcapital.global</span>
                 </div>
               </div>
             </div>
@@ -154,7 +187,11 @@ export function ContactView() {
                 <div>
                   <h3 className="text-lg font-bold mb-1">{t('contact.liveChat')}</h3>
                   <p className="text-on-surface-variant text-sm mb-3">{t('contact.chatResponse')}</p>
-                  <button className="text-secondary font-bold text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all">
+                  <button 
+                    type="button"
+                    onClick={() => onNavigate && onNavigate('auth')}
+                    className="text-secondary font-bold text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all"
+                  >
                     {t('contact.startSession')} &rarr;
                   </button>
                 </div>
@@ -169,7 +206,6 @@ export function ContactView() {
                 <div>
                   <h3 className="text-lg font-bold mb-1">{t('contact.phone')}</h3>
                   <p className="text-on-surface-variant text-sm mb-3">{t('contact.phoneResponse')}</p>
-                  <span className="text-tertiary font-mono font-medium">+1 (800) FOREX-CAP</span>
                 </div>
               </div>
             </div>

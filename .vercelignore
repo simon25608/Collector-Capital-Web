@@ -1,0 +1,3 @@
+# Ignorar la carpeta de Supabase en los despliegues de Vercel
+# Vercel solo necesita el frontend (src/) y la API serverless (api/)
+supabase/
