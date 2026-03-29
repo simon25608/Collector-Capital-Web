@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  Search,
-  ChevronDown,
-  ChevronUp,
-  CheckCircle2,
-} from "lucide-react";
+import { Search, ChevronDown, ChevronUp, CheckCircle2 } from "lucide-react";
 import { ChannelCards } from "@/components/ui/channel-cards";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";

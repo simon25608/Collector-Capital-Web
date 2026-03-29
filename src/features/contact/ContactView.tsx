@@ -1,7 +1,4 @@
-import {
-  Loader2,
-  CheckCircle2,
-} from "lucide-react";
+import { Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslation } from "react-i18next";
@@ -201,15 +198,29 @@ export function ContactView({
                   onChange={setSelectedStrategy}
                   options={[
                     ...(strategies.length > 0
-                      ? strategies.map((s): SelectOption => ({
-                          value: s.name,
-                          label: s.display_name || s.name,
-                        }))
+                      ? strategies.map(
+                          (s): SelectOption => ({
+                            value: s.name,
+                            label: s.display_name || s.name,
+                          }),
+                        )
                       : [
-                          { value: t("contact.forexSpot"), label: t("contact.forexSpot") },
-                          { value: t("contact.fixedIncome"), label: t("contact.fixedIncome") },
-                          { value: t("contact.algoTrading"), label: t("contact.algoTrading") },
-                          { value: t("contact.portfolioAdvisory"), label: t("contact.portfolioAdvisory") },
+                          {
+                            value: t("contact.forexSpot"),
+                            label: t("contact.forexSpot"),
+                          },
+                          {
+                            value: t("contact.fixedIncome"),
+                            label: t("contact.fixedIncome"),
+                          },
+                          {
+                            value: t("contact.algoTrading"),
+                            label: t("contact.algoTrading"),
+                          },
+                          {
+                            value: t("contact.portfolioAdvisory"),
+                            label: t("contact.portfolioAdvisory"),
+                          },
                         ]),
                     { value: "Other", label: t("contact.other") },
                   ]}

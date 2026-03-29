@@ -33,9 +33,7 @@ export function ChannelCards({ onNavigate, className }: ChannelCardsProps) {
             <MessageSquare className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold mb-1">
-              {t("contact.liveChat")}
-            </h3>
+            <h3 className="text-lg font-bold mb-1">{t("contact.liveChat")}</h3>
             <p className="text-on-surface-variant text-sm mb-3">
               {t("contact.chatResponse")}
             </p>
@@ -58,9 +56,7 @@ export function ChannelCards({ onNavigate, className }: ChannelCardsProps) {
             <Phone className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-lg font-bold mb-1">
-              {t("contact.phone")}
-            </h3>
+            <h3 className="text-lg font-bold mb-1">{t("contact.phone")}</h3>
             <p className="text-on-surface-variant text-sm mb-3">
               {t("contact.phoneResponse")}
             </p>

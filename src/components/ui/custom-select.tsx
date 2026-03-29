@@ -54,7 +54,9 @@ export function CustomSelect({
           size === "sm" ? "text-sm px-4 py-3" : "px-4 py-3.5",
         )}
       >
-        <span className={selected ? "text-on-surface" : "text-on-surface-variant"}>
+        <span
+          className={selected ? "text-on-surface" : "text-on-surface-variant"}
+        >
           {selected?.label ?? "—"}
         </span>
         <ChevronDown
