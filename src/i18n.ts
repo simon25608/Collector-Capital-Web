@@ -153,7 +153,8 @@ const resources = {
           "High-frequency scalping strategy focused on micro price movements in major forex pairs. Positions are typically closed within the same session, eliminating overnight exposure.",
         viewFirmProfile: "View Firm Profile",
         firmEstablished: "Established 2021 \u2022 Madrid",
-        firmDescription: "Collector Capital is a premier algorithmic trading firm specialized in systematic FX strategies with a rigorous risk-management framework.",
+        firmDescription:
+          "Collector Capital is a premier algorithmic trading firm specialized in systematic FX strategies with a rigorous risk-management framework.",
         comingSoonTitle: "Coming Soon",
         comingSoonDesc:
           "Online investment through this portal will be available shortly. In the meantime, please contact us through our contact form and our team will assist you personally.",
@@ -469,7 +470,8 @@ const resources = {
           "Estrategia de scalping de alta frecuencia centrada en micro movimientos de precios en los principales pares de divisas. Las posiciones se cierran normalmente dentro de la misma sesión, eliminando la exposición nocturna.",
         viewFirmProfile: "Ver Perfil de la Firma",
         firmEstablished: "Fundada en 2021 \u2022 Madrid",
-        firmDescription: "Collector Capital es una firma líder en trading algorítmico especializada en estrategias sistemáticas de FX con un riguroso marco de gestión del riesgo.",
+        firmDescription:
+          "Collector Capital es una firma líder en trading algorítmico especializada en estrategias sistemáticas de FX con un riguroso marco de gestión del riesgo.",
         comingSoonTitle: "Próximamente",
         comingSoonDesc:
           "La inversión online a través de este portal estará disponible próximamente. Mientras tanto, contáctanos a través del formulario de contacto y nuestro equipo te atenderá personalmente.",

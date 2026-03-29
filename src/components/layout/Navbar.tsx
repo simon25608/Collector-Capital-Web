@@ -270,7 +270,6 @@ export function Navbar({
               {label}
             </button>
           ))}
-
         </div>
       )}
     </nav>
