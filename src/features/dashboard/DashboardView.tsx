@@ -328,7 +328,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                       <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                         {t("dashboard.totalReturn")}
                       </p>
-                      <p className="text-2xl font-bold text-primary">{t("dashboard.staticStrategy1Return")}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {t("dashboard.staticStrategy1Return")}
+                      </p>
                     </div>
                     <span className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
                       {t("dashboard.explore")}
@@ -366,7 +368,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                       <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                         {t("dashboard.totalReturn")}
                       </p>
-                      <p className="text-2xl font-bold text-primary">{t("dashboard.staticStrategy2Return")}</p>
+                      <p className="text-2xl font-bold text-primary">
+                        {t("dashboard.staticStrategy2Return")}
+                      </p>
                     </div>
                     <span className="text-secondary text-sm font-bold uppercase tracking-widest hover:underline underline-offset-4">
                       {t("dashboard.explore")}
