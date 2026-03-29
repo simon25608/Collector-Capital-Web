@@ -135,7 +135,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 {t("dashboard.heroSubtitle")}
               </p>
               <div className="flex flex-wrap justify-center sm:justify-start gap-6 sm:gap-12 pt-4">
-                <div>
+                <div className="text-center sm:text-left">
                   <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                     {t("dashboard.cumulativeGain")}
                   </p>
@@ -143,7 +143,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     +{featuredStrategy?.monthly_return.toFixed(2)}%
                   </p>
                 </div>
-                <div>
+                <div className="text-center sm:text-left">
                   <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                     {t("dashboard.maxDrawdown")}
                   </p>
@@ -151,7 +151,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                     {Math.abs(featuredStrategy?.drawdown ?? 0).toFixed(1)}%
                   </p>
                 </div>
-                <div>
+                <div className="text-center sm:text-left">
                   <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
                     {t("dashboard.investors")}
                   </p>

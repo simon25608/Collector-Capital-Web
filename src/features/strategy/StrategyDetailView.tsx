@@ -352,7 +352,7 @@ export function StrategyDetailView({
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="bg-surface-container-high p-5 rounded-xl"
+                    className="bg-surface-container-high p-5 rounded-xl text-center"
                   >
                     <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-1">
                       {stat.label}
@@ -382,7 +382,7 @@ export function StrategyDetailView({
                     <Badge variant="secondary">High Yield</Badge>
                   </div>
                   <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-2">
-                    Viper Scalper Pro
+                    Collector Capital Strategy
                   </h1>
                   <p className="text-on-surface-variant flex items-center gap-2">
                     Risk Level:{" "}
@@ -512,7 +512,7 @@ export function StrategyDetailView({
                 ].map((stat) => (
                   <div
                     key={stat.label}
-                    className="bg-surface-container-high p-5 rounded-xl"
+                    className="bg-surface-container-high p-5 rounded-xl text-center"
                   >
                     <p className="text-[0.6875rem] font-medium uppercase text-on-surface-variant mb-1">
                       {stat.label}
@@ -871,24 +871,16 @@ export function StrategyDetailView({
                 </div>
                 <div>
                   <h4 className="font-bold text-on-surface">
-                    Viper Trading Lab
+                    Collector Capital
                   </h4>
                   <p className="text-xs text-on-surface-variant">
-                    Established 2018 • Zurich
+                    {t("strategies.firmEstablished")}
                   </p>
                 </div>
               </div>
-              <p className="text-xs text-on-surface-variant leading-relaxed mb-4">
-                Viper Trading Lab is a premier algorithmic quant house
-                specialized in FX scalping and HFT strategies with over $50M
-                AUM.
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                {t("strategies.firmDescription")}
               </p>
-              <Button
-                variant="outline"
-                className="w-full py-2 text-xs text-secondary border-secondary/20 hover:bg-secondary/5"
-              >
-                {t("strategies.viewFirmProfile")}
-              </Button>
             </Card>
           </div>
         </div>

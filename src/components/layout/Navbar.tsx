@@ -158,7 +158,7 @@ export function Navbar({
                     </button>
 
                     {showNotifications && (
-                      <div className="absolute right-0 mt-2 w-80 bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50">
+                      <div className="fixed top-16 right-2 w-80 max-w-[calc(100vw-1rem)] bg-surface-container-high border border-outline-variant/20 rounded-xl shadow-2xl overflow-hidden z-50 sm:absolute sm:top-auto sm:right-0 sm:mt-2">
                         <div className="p-4 border-b border-outline-variant/10">
                           <h3 className="font-semibold text-on-surface">
                             {t("navbar.notifications")}
@@ -270,28 +270,7 @@ export function Navbar({
               {label}
             </button>
           ))}
-          {session && (
-            <div className="mt-2 pt-2 border-t border-outline-variant/15 flex flex-col gap-1">
-              <button
-                onClick={() => handleMobileNav("profile")}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
-              >
-                {t("navbar.profileSettings")}
-              </button>
-              <button
-                onClick={() => handleMobileNav("watchlist")}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-on-surface-variant hover:bg-surface-container-highest hover:text-on-surface transition-colors"
-              >
-                {t("navbar.myWatchlist")}
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="w-full text-left px-4 py-3 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
-          )}
+
         </div>
       )}
     </nav>

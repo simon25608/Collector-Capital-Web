@@ -176,7 +176,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
       </div>
       <div className="mt-auto px-8 pb-8">
         <div className="grid grid-cols-2 gap-4 mb-6 pt-6 border-t border-outline-variant/10">
-          <div>
+          <div className="text-center">
             <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">
               {t("dashboard.maxDrawdown")}
             </span>
@@ -184,7 +184,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
               {Math.abs(strategy.drawdown).toFixed(2)}%
             </span>
           </div>
-          <div>
+          <div className="text-center">
             <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">
               {t("dashboard.investors")}
             </span>

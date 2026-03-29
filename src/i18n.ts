@@ -152,6 +152,8 @@ const resources = {
         tradingStyleDesc:
           "High-frequency scalping strategy focused on micro price movements in major forex pairs. Positions are typically closed within the same session, eliminating overnight exposure.",
         viewFirmProfile: "View Firm Profile",
+        firmEstablished: "Established 2021 \u2022 Madrid",
+        firmDescription: "Collector Capital is a premier algorithmic trading firm specialized in systematic FX strategies with a rigorous risk-management framework.",
         comingSoonTitle: "Coming Soon",
         comingSoonDesc:
           "Online investment through this portal will be available shortly. In the meantime, please contact us through our contact form and our team will assist you personally.",
@@ -217,7 +219,7 @@ const resources = {
         phoneResponse: "Dedicated line for high-net-worth.",
         faq1: {
           q: "How do I start investing?",
-          a: "Starting your investment journey with Equilibrium Pro is designed to be seamless. First, complete your account registration and identity verification (KYC). Once verified, you can deposit funds via bank transfer or supported digital assets.",
+          a: "Starting your investment journey with Collector Capital is designed to be seamless. First, complete your account registration and identity verification (KYC). Once verified, you can deposit funds via bank transfer or supported digital assets.",
           b1: "Choose a portfolio strategy that matches your risk profile.",
           b2: "Set up automated recurring investments to benefit from dollar-cost averaging.",
           b3: "Monitor performance in real-time via your personalized dashboard.",
@@ -466,6 +468,8 @@ const resources = {
         tradingStyleDesc:
           "Estrategia de scalping de alta frecuencia centrada en micro movimientos de precios en los principales pares de divisas. Las posiciones se cierran normalmente dentro de la misma sesión, eliminando la exposición nocturna.",
         viewFirmProfile: "Ver Perfil de la Firma",
+        firmEstablished: "Fundada en 2021 \u2022 Madrid",
+        firmDescription: "Collector Capital es una firma líder en trading algorítmico especializada en estrategias sistemáticas de FX con un riguroso marco de gestión del riesgo.",
         comingSoonTitle: "Próximamente",
         comingSoonDesc:
           "La inversión online a través de este portal estará disponible próximamente. Mientras tanto, contáctanos a través del formulario de contacto y nuestro equipo te atenderá personalmente.",
@@ -531,7 +535,7 @@ const resources = {
         phoneResponse: "Línea dedicada para altos patrimonios.",
         faq1: {
           q: "¿Cómo empiezo a invertir?",
-          a: "Comenzar su viaje de inversión con Equilibrium Pro está diseñado para ser fluido. Primero, complete el registro de su cuenta y la verificación de identidad (KYC). Una vez verificado, puede depositar fondos mediante transferencia bancaria o activos digitales compatibles.",
+          a: "Comenzar su viaje de inversión con Collector Capital está diseñado para ser fluido. Primero, complete el registro de su cuenta y la verificación de identidad (KYC). Una vez verificado, puede depositar fondos mediante transferencia bancaria o activos digitales compatibles.",
           b1: "Elija una estrategia de cartera que coincida con su perfil de riesgo.",
           b2: "Configure inversiones recurrentes automatizadas para beneficiarse del promedio de costo en dólares.",
           b3: "Monitoree el rendimiento en tiempo real a través de su panel personalizado.",
