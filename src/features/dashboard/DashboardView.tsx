@@ -16,12 +16,15 @@ import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { getRiskLevel } from "@/lib/utils";
 
 function getSparklineBars(strategy: Strategy): number[] {
-  const seed = strategy.id.split('').reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
+  const seed = strategy.id
+    .split("")
+    .reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
   return Array.from({ length: 8 }, (_, i) => {
     const val = ((seed * (i + 1) * 2654435761) >>> 0) % 65536;
     return Math.round((val / 65536) * 65) + 20; // 20–85%
   }).map((h, i, arr) => {
-    if (i === arr.length - 1) return strategy.monthly_return > 0 ? Math.max(h, 70) : Math.min(h, 40);
+    if (i === arr.length - 1)
+      return strategy.monthly_return > 0 ? Math.max(h, 70) : Math.min(h, 40);
     return h;
   });
 }
@@ -112,100 +115,94 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
             <Loader2 className="w-10 h-10 text-primary animate-spin" />
           </div>
         ) : (
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
-          <div className="flex-1 space-y-8">
-            <div className="inline-flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant/15">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
-                {t("dashboard.featuredStrategy")}
-              </span>
+          <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
+            <div className="flex-1 space-y-8">
+              <div className="inline-flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant/15">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                <span className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant">
+                  {t("dashboard.featuredStrategy")}
+                </span>
+              </div>
+              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-on-surface leading-[1.1]">
+                {featuredStrategy?.display_name ||
+                  featuredStrategy?.name ||
+                  t("dashboard.heroTitle")}{" "}
+                <span className="text-primary">Strategy</span>
+              </h1>
+              <p className="text-lg text-on-surface-variant max-w-xl leading-relaxed">
+                {t("dashboard.heroSubtitle")}
+              </p>
+              <div className="flex flex-wrap gap-12 pt-4">
+                <div>
+                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
+                    {t("dashboard.cumulativeGain")}
+                  </p>
+                  <p className="text-4xl font-bold text-primary">
+                    +{featuredStrategy?.monthly_return.toFixed(2)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
+                    {t("dashboard.maxDrawdown")}
+                  </p>
+                  <p className="text-4xl font-bold text-tertiary">
+                    {Math.abs(featuredStrategy?.drawdown ?? 0).toFixed(1)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
+                    {t("dashboard.investors")}
+                  </p>
+                  <p className="text-4xl font-bold text-on-surface">
+                    {featuredStrategy?.investors.toLocaleString()}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-6 pt-6">
+                <button
+                  onClick={() =>
+                    onNavigate("strategy-detail", featuredStrategy?.id)
+                  }
+                  className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
+                >
+                  {t("dashboard.investNow")}
+                </button>
+                <button
+                  onClick={() =>
+                    onNavigate("strategy-detail", featuredStrategy?.id)
+                  }
+                  className="bg-surface-container-highest text-on-surface px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest hover:bg-surface-bright transition-colors"
+                >
+                  {t("dashboard.viewLedger")}
+                </button>
+              </div>
             </div>
-            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-on-surface leading-[1.1]">
-              {featuredStrategy?.display_name ||
-                featuredStrategy?.name ||
-                t("dashboard.heroTitle")}{" "}
-              <span className="text-primary">Strategy</span>
-            </h1>
-            <p className="text-lg text-on-surface-variant max-w-xl leading-relaxed">
-              {t("dashboard.heroSubtitle")}
-            </p>
-            <div className="flex flex-wrap gap-12 pt-4">
-              <div>
-                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
-                  {t("dashboard.cumulativeGain")}
-                </p>
-                <p className="text-4xl font-bold text-primary">
-                  +{featuredStrategy?.monthly_return.toFixed(2)}%
-                </p>
-              </div>
-              <div>
-                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
-                  {t("dashboard.maxDrawdown")}
-                </p>
-                <p className="text-4xl font-bold text-tertiary">
-                  {Math.abs(featuredStrategy?.drawdown ?? 0).toFixed(1)}%
-                </p>
-              </div>
-              <div>
-                <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">
-                  {t("dashboard.investors")}
-                </p>
-                <p className="text-4xl font-bold text-on-surface">
-                  {featuredStrategy?.investors.toLocaleString()}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-6 pt-6">
-              <button
-                onClick={() =>
-                  onNavigate(
-                    "strategy-detail",
-                    featuredStrategy?.id,
-                  )
-                }
-                className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
-              >
-                {t("dashboard.investNow")}
-              </button>
-              <button
-                onClick={() =>
-                  onNavigate(
-                    "strategy-detail",
-                    featuredStrategy?.id,
-                  )
-                }
-                className="bg-surface-container-highest text-on-surface px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest hover:bg-surface-bright transition-colors"
-              >
-                {t("dashboard.viewLedger")}
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 w-full lg:w-auto">
-            <div className="bg-surface-container-low/70 backdrop-blur-xl p-8 rounded-xl border border-outline-variant/15 shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4">
-                <TrendingUp className="text-primary/40 w-16 h-16" />
-              </div>
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-2">
-                  {t("dashboard.performanceCurve")}
-                </h3>
-                <p className="text-sm text-on-surface-variant">
-                  {t("dashboard.performanceHistory")}
-                </p>
-              </div>
-              <div className="h-64 flex items-end gap-2">
-                <div className="w-full bg-surface-container-low h-[20%] rounded-t-sm"></div>
-                <div className="w-full bg-surface-container-low h-[35%] rounded-t-sm"></div>
-                <div className="w-full bg-surface-container-low h-[25%] rounded-t-sm"></div>
-                <div className="w-full bg-surface-container-high h-[45%] rounded-t-sm"></div>
-                <div className="w-full bg-primary/40 h-[60%] rounded-t-sm"></div>
-                <div className="w-full bg-primary/60 h-[55%] rounded-t-sm"></div>
-                <div className="w-full bg-primary/80 h-[75%] rounded-t-sm"></div>
-                <div className="w-full bg-primary h-[90%] rounded-t-sm shadow-[0_0_15px_rgba(78,222,163,0.3)]"></div>
+            <div className="flex-1 w-full lg:w-auto">
+              <div className="bg-surface-container-low/70 backdrop-blur-xl p-8 rounded-xl border border-outline-variant/15 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4">
+                  <TrendingUp className="text-primary/40 w-16 h-16" />
+                </div>
+                <div className="mb-8">
+                  <h3 className="text-xl font-semibold mb-2">
+                    {t("dashboard.performanceCurve")}
+                  </h3>
+                  <p className="text-sm text-on-surface-variant">
+                    {t("dashboard.performanceHistory")}
+                  </p>
+                </div>
+                <div className="h-64 flex items-end gap-2">
+                  <div className="w-full bg-surface-container-low h-[20%] rounded-t-sm"></div>
+                  <div className="w-full bg-surface-container-low h-[35%] rounded-t-sm"></div>
+                  <div className="w-full bg-surface-container-low h-[25%] rounded-t-sm"></div>
+                  <div className="w-full bg-surface-container-high h-[45%] rounded-t-sm"></div>
+                  <div className="w-full bg-primary/40 h-[60%] rounded-t-sm"></div>
+                  <div className="w-full bg-primary/60 h-[55%] rounded-t-sm"></div>
+                  <div className="w-full bg-primary/80 h-[75%] rounded-t-sm"></div>
+                  <div className="w-full bg-primary h-[90%] rounded-t-sm shadow-[0_0_15px_rgba(78,222,163,0.3)]"></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
         )}
       </section>
 
@@ -266,7 +263,9 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                           key={i}
                           style={{ height: `${h}%` }}
                           className={`w-full rounded-t-sm ${
-                            i === 7 ? 'bg-primary shadow-[0_0_8px_rgba(78,222,163,0.4)]' : 'bg-primary/50'
+                            i === 7
+                              ? "bg-primary shadow-[0_0_8px_rgba(78,222,163,0.4)]"
+                              : "bg-primary/50"
                           }`}
                         />
                       ))}
