@@ -1,78 +1,123 @@
-import { Mail, MessageSquare, Phone, Loader2, CheckCircle2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useTranslation } from 'react-i18next';
-import React, { useState, useEffect } from 'react';
-import { Turnstile } from '@marsidev/react-turnstile';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import {
+  Mail,
+  MessageSquare,
+  Phone,
+  Loader2,
+  CheckCircle2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useTranslation } from "react-i18next";
+import React, { useState, useEffect } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { Session } from "@supabase/supabase-js";
 
 interface ContactViewProps {
   onNavigate?: (view: string) => void;
+  preselectedStrategy?: string;
 }
 
-export function ContactView({ onNavigate }: ContactViewProps) {
+export function ContactView({
+  onNavigate,
+  preselectedStrategy,
+}: ContactViewProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [strategies, setStrategies] = useState<any[]>([]);
+  const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState<string>("");
+  const [fullName, setFullName] = useState<string>("");
+  const [selectedStrategy, setSelectedStrategy] = useState<string>(
+    preselectedStrategy ?? "",
+  );
+
+  useEffect(() => {
+    if (preselectedStrategy !== undefined) {
+      setSelectedStrategy(preselectedStrategy);
+    }
+  }, [preselectedStrategy]);
 
   useEffect(() => {
     async function fetchStrategies() {
       if (!isSupabaseConfigured) return;
       try {
         const { data, error } = await supabase
-          .from('trading_strategies')
-          .select('name, display_name')
-          .eq('is_visible', true)
-          .order('name', { ascending: true });
+          .from("trading_strategies")
+          .select("name, display_name")
+          .eq("is_visible", true)
+          .order("name", { ascending: true });
         if (!error && data) {
           setStrategies(data);
         }
       } catch (err) {
-        console.error('Error fetching strategies:', err);
+        console.error("Error fetching strategies:", err);
       }
     }
     fetchStrategies();
   }, []);
 
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        if (session.user?.email) setEmail(session.user.email);
+        // user metadata stores full_name in ProfileView
+        if (session.user?.user_metadata?.full_name)
+          setFullName(session.user.user_metadata.full_name);
+      }
+    });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!captchaToken) {
-      setError('Please complete the CAPTCHA to proceed.');
+      setError("Please complete the CAPTCHA to proceed.");
       return;
     }
-    
+
     setLoading(true);
     setError(null);
     setSuccess(false);
 
     const formData = new FormData(e.currentTarget);
     const data = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      subject: formData.get('subject'),
-      message: formData.get('message'),
+      name: formData.get("name"),
+      email: formData.get("email"),
+      subject: formData.get("subject"),
+      message: formData.get("message"),
     };
 
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to send message');
+        throw new Error(result.error || "Failed to send message");
       }
 
       setSuccess(true);
       (e.target as HTMLFormElement).reset();
+      // If the user is authenticated, keep the email and full name filled from the session
+      if (session) {
+        if (session.user?.email) setEmail(session.user.email);
+        if (session.user?.user_metadata?.full_name)
+          setFullName(session.user.user_metadata.full_name);
+      } else {
+        setEmail("");
+        setFullName("");
+      }
     } catch (err: any) {
-      setError(err.message || 'An error occurred while sending your message.');
+      setError(err.message || "An error occurred while sending your message.");
     } finally {
       setLoading(false);
     }
@@ -84,10 +129,14 @@ export function ContactView({ onNavigate }: ContactViewProps) {
       <section className="relative py-16 px-8 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
         <div className="max-w-7xl mx-auto relative z-10 text-center">
-          <span className="text-primary font-medium tracking-[0.2em] uppercase text-[11px] mb-4 block">{t('contact.institutionalAccess')}</span>
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-on-surface">{t('contact.title')}</h1>
+          <span className="text-primary font-medium tracking-[0.2em] uppercase text-[11px] mb-4 block">
+            {t("contact.institutionalAccess")}
+          </span>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 text-on-surface">
+            {t("contact.title")}
+          </h1>
           <p className="text-on-surface-variant text-lg md:text-xl max-w-2xl mx-auto">
-            {t('contact.subtitle')}
+            {t("contact.subtitle")}
           </p>
         </div>
       </section>
@@ -97,12 +146,16 @@ export function ContactView({ onNavigate }: ContactViewProps) {
         <div className="grid lg:grid-cols-2 gap-16 items-start">
           {/* Contact Form */}
           <div className="bg-surface-container-low p-8 md:p-12 rounded-xl shadow-2xl">
-            <h2 className="text-2xl font-semibold mb-8">{t('contact.directInquiry')}</h2>
+            <h2 className="text-2xl font-semibold mb-8">
+              {t("contact.directInquiry")}
+            </h2>
             <form className="space-y-6" onSubmit={handleSubmit}>
               {success && (
                 <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3 text-primary">
                   <CheckCircle2 className="w-5 h-5" />
-                  <span className="text-sm font-medium">{t('contact.success')}</span>
+                  <span className="text-sm font-medium">
+                    {t("contact.success")}
+                  </span>
                 </div>
               )}
               {error && (
@@ -110,57 +163,94 @@ export function ContactView({ onNavigate }: ContactViewProps) {
                   {error}
                 </div>
               )}
-              
+
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.fullName')}</label>
-                  <Input name="name" placeholder="John Doe" type="text" required />
+                  <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">
+                    {t("contact.fullName")}
+                  </label>
+                  <Input
+                    name="name"
+                    placeholder="John Doe"
+                    type="text"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                  />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.email')}</label>
-                  <Input name="email" placeholder="john@institutional.com" type="email" required />
+                  <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">
+                    {t("contact.email")}
+                  </label>
+                  <Input
+                    name="email"
+                    placeholder="john@institutional.com"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.strategyInterest')}</label>
-                <select name="subject" required className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none">
+                <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">
+                  {t("contact.strategyInterest")}
+                </label>
+                <select
+                  name="subject"
+                  required
+                  value={selectedStrategy}
+                  onChange={(e) => setSelectedStrategy(e.target.value)}
+                  className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all appearance-none"
+                >
                   {strategies.length > 0 ? (
                     strategies.map((s, i) => (
-                      <option key={i} value={s.name}>{s.display_name || s.name}</option>
+                      <option key={i} value={s.name}>
+                        {s.display_name || s.name}
+                      </option>
                     ))
                   ) : (
                     <>
-                      <option>{t('contact.forexSpot')}</option>
-                      <option>{t('contact.fixedIncome')}</option>
-                      <option>{t('contact.algoTrading')}</option>
-                      <option>{t('contact.portfolioAdvisory')}</option>
+                      <option>{t("contact.forexSpot")}</option>
+                      <option>{t("contact.fixedIncome")}</option>
+                      <option>{t("contact.algoTrading")}</option>
+                      <option>{t("contact.portfolioAdvisory")}</option>
                     </>
                   )}
-                  <option value="Other">{t('contact.other')}</option>
+                  <option value="Other">{t("contact.other")}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">{t('contact.message')}</label>
-                <textarea 
+                <label className="text-[11px] uppercase tracking-widest text-on-surface-variant font-medium">
+                  {t("contact.message")}
+                </label>
+                <textarea
                   name="message"
                   required
-                  className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all" 
-                  placeholder={t('contact.messagePlaceholder')} 
+                  className="w-full bg-surface-container-highest border-none rounded-xl px-4 py-3.5 text-on-surface focus:ring-2 focus:ring-secondary/20 outline-none transition-all"
+                  placeholder={t("contact.messagePlaceholder")}
                   rows={4}
                 ></textarea>
               </div>
-              
+
               <div className="flex justify-center py-2">
-                <Turnstile 
-                  siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY || '0x4AAAAAACxRmsEjj__pSQit'} 
+                <Turnstile
+                  siteKey={
+                    import.meta.env.VITE_TURNSTILE_SITE_KEY ||
+                    "0x4AAAAAACxRmsEjj__pSQit"
+                  }
                   onSuccess={setCaptchaToken}
-                  options={{ theme: 'dark' }}
+                  options={{ theme: "dark" }}
                 />
               </div>
 
-              <Button className="w-full py-4 text-sm tracking-widest uppercase flex items-center justify-center gap-2" type="submit" disabled={loading || !captchaToken}>
+              <Button
+                className="w-full py-4 text-sm tracking-widest uppercase flex items-center justify-center gap-2"
+                type="submit"
+                disabled={loading || !captchaToken}
+              >
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {t('contact.submit')}
+                {t("contact.submit")}
               </Button>
             </form>
           </div>
@@ -173,26 +263,34 @@ export function ContactView({ onNavigate }: ContactViewProps) {
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-1">{t('contact.priorityEmail')}</h3>
-                  <p className="text-on-surface-variant text-sm mb-3">{t('contact.emailResponse')}</p>
+                  <h3 className="text-lg font-bold mb-1">
+                    {t("contact.priorityEmail")}
+                  </h3>
+                  <p className="text-on-surface-variant text-sm mb-3">
+                    {t("contact.emailResponse")}
+                  </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="group p-8 bg-surface-container-high rounded-xl hover:bg-surface-bright transition-all cursor-pointer">
               <div className="flex items-start gap-6">
                 <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
                   <MessageSquare className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-1">{t('contact.liveChat')}</h3>
-                  <p className="text-on-surface-variant text-sm mb-3">{t('contact.chatResponse')}</p>
-                  <button 
+                  <h3 className="text-lg font-bold mb-1">
+                    {t("contact.liveChat")}
+                  </h3>
+                  <p className="text-on-surface-variant text-sm mb-3">
+                    {t("contact.chatResponse")}
+                  </p>
+                  <button
                     type="button"
-                    onClick={() => onNavigate && onNavigate('auth')}
+                    onClick={() => onNavigate && onNavigate("auth")}
                     className="text-secondary font-bold text-xs uppercase tracking-widest flex items-center gap-2 group-hover:gap-3 transition-all"
                   >
-                    {t('contact.startSession')} &rarr;
+                    {t("contact.startSession")} &rarr;
                   </button>
                 </div>
               </div>
@@ -204,8 +302,12 @@ export function ContactView({ onNavigate }: ContactViewProps) {
                   <Phone className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold mb-1">{t('contact.phone')}</h3>
-                  <p className="text-on-surface-variant text-sm mb-3">{t('contact.phoneResponse')}</p>
+                  <h3 className="text-lg font-bold mb-1">
+                    {t("contact.phone")}
+                  </h3>
+                  <p className="text-on-surface-variant text-sm mb-3">
+                    {t("contact.phoneResponse")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -218,8 +320,12 @@ export function ContactView({ onNavigate }: ContactViewProps) {
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-12">
             <div className="max-w-md">
-              <h2 className="text-3xl font-bold mb-4">{t('contact.globalPresence')}</h2>
-              <p className="text-on-surface-variant">{t('contact.globalSubtitle')}</p>
+              <h2 className="text-3xl font-bold mb-4">
+                {t("contact.globalPresence")}
+              </h2>
+              <p className="text-on-surface-variant">
+                {t("contact.globalSubtitle")}
+              </p>
             </div>
             <div className="flex gap-12 font-mono text-xs uppercase tracking-widest text-on-surface-variant">
               <div>
@@ -236,29 +342,35 @@ export function ContactView({ onNavigate }: ContactViewProps) {
               </div>
             </div>
           </div>
-          
+
           <div className="relative w-full aspect-[21/9] rounded-2xl overflow-hidden bg-surface-container-lowest grayscale brightness-75 hover:grayscale-0 hover:brightness-100 transition-all duration-700 cursor-crosshair">
-            <img 
-              src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=2000" 
-              alt="World Map" 
+            <img
+              src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=2000"
+              alt="World Map"
               className="w-full h-full object-cover opacity-40"
             />
             {/* Location Pointers */}
             <div className="absolute top-1/3 left-[22%] group">
               <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(78,222,163,0.8)]"></div>
-              <div className="absolute top-full mt-2 -left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-bright px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">New York</div>
+              <div className="absolute top-full mt-2 -left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-bright px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                New York
+              </div>
             </div>
             <div className="absolute top-[28%] left-[48%] group">
               <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(78,222,163,0.8)]"></div>
-              <div className="absolute top-full mt-2 -left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-bright px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">London</div>
+              <div className="absolute top-full mt-2 -left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-bright px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                London
+              </div>
             </div>
             <div className="absolute top-1/2 left-[82%] group">
               <div className="w-3 h-3 bg-primary rounded-full animate-pulse shadow-[0_0_15px_rgba(78,222,163,0.8)]"></div>
-              <div className="absolute top-full mt-2 -left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-bright px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">Singapore</div>
+              <div className="absolute top-full mt-2 -left-4 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-bright px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest whitespace-nowrap">
+                Singapore
+              </div>
             </div>
           </div>
         </div>
       </section>
     </main>
-  )
+  );
 }

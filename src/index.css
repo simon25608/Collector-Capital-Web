@@ -73,3 +73,44 @@ body {
   color: var(--color-on-surface);
   font-family: 'Inter', sans-serif;
 }
+
+@media print {
+  /*
+   * Override all dark-theme CSS custom properties to light equivalents.
+   * This is the correct approach: Tailwind utilities use var(--color-*)
+   * so overriding the variables at :root automatically makes every element light.
+   * We intentionally do NOT set print-color-adjust:exact — keeping the default
+   * (economy) so the browser strips any remaining backgrounds.
+   */
+  :root {
+    --color-surface: #ffffff;
+    --color-surface-bright: #ffffff;
+    --color-surface-variant: #f0f0f0;
+    --color-surface-container-highest: #e8e8e8;
+    --color-surface-container-high: #efefef;
+    --color-surface-container: #f5f5f5;
+    --color-surface-container-low: #f9f9f9;
+    --color-surface-container-lowest: #ffffff;
+    --color-surface-dim: #ffffff;
+    --color-background: #ffffff;
+    --color-on-surface: #111111;
+    --color-on-surface-variant: #333333;
+    --color-on-background: #111111;
+    --color-outline-variant: #cccccc;
+    --color-outline: #999999;
+    --color-primary: #006c49;
+    --color-on-primary: #ffffff;
+    --color-secondary: #0044aa;
+    --color-error: #b00020;
+    --color-error-container: #fde0e0;
+    --color-on-error-container: #7a0010;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #111111 !important;
+  }
+
+  /* Hide navigation/footer during print (Tailwind's print:hidden utility) */
+  .print\:hidden { display: none !important; }
+}

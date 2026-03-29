@@ -96,7 +96,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               </div>
               <div>
                 <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.maxDrawdown')}</p>
-                <p className="text-4xl font-bold text-tertiary">-{featuredStrategy?.drawdown.toFixed(1) || '8.4'}%</p>
+                <p className="text-4xl font-bold text-tertiary">{featuredStrategy ? Math.abs(featuredStrategy.drawdown).toFixed(1) : '8.4'}%</p>
               </div>
               <div>
                 <p className="text-[0.6875rem] font-medium uppercase tracking-widest text-on-surface-variant mb-1">{t('dashboard.investors')}</p>

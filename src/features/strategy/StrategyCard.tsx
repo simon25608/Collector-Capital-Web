@@ -153,7 +153,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({ strategy, onClick })
         <div className="grid grid-cols-2 gap-4 mb-6 pt-6 border-t border-outline-variant/10">
           <div>
             <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">{t('dashboard.maxDrawdown')}</span>
-            <span className="text-sm font-bold text-on-surface">{strategy.drawdown.toFixed(2)}%</span>
+            <span className="text-sm font-bold text-on-surface">{Math.abs(strategy.drawdown).toFixed(2)}%</span>
           </div>
           <div>
             <span className="text-[0.6875rem] uppercase tracking-wider font-medium text-on-surface-variant block mb-1">{t('dashboard.investors')}</span>
