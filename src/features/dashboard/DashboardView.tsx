@@ -15,6 +15,17 @@ import { useState, useEffect } from "react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import { getRiskLevel } from "@/lib/utils";
 
+function getSparklineBars(strategy: Strategy): number[] {
+  const seed = strategy.id.split('').reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
+  return Array.from({ length: 8 }, (_, i) => {
+    const val = ((seed * (i + 1) * 2654435761) >>> 0) % 65536;
+    return Math.round((val / 65536) * 65) + 20; // 20–85%
+  }).map((h, i, arr) => {
+    if (i === arr.length - 1) return strategy.monthly_return > 0 ? Math.max(h, 70) : Math.min(h, 40);
+    return h;
+  });
+}
+
 interface DashboardViewProps {
   onNavigate: (view: string, id?: string) => void;
 }
@@ -96,6 +107,11 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
               "radial-gradient(circle at 70% 30%, #4edea3 0%, transparent 70%)",
           }}
         ></div>
+        {loading ? (
+          <div className="max-w-7xl mx-auto flex items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 text-primary animate-spin" />
+          </div>
+        ) : (
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16">
           <div className="flex-1 space-y-8">
             <div className="inline-flex items-center gap-2 bg-surface-container-high px-4 py-2 rounded-full border border-outline-variant/15">
@@ -119,7 +135,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   {t("dashboard.cumulativeGain")}
                 </p>
                 <p className="text-4xl font-bold text-primary">
-                  +{featuredStrategy?.monthly_return.toFixed(2) || "142.50"}%
+                  +{featuredStrategy?.monthly_return.toFixed(2)}%
                 </p>
               </div>
               <div>
@@ -127,10 +143,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   {t("dashboard.maxDrawdown")}
                 </p>
                 <p className="text-4xl font-bold text-tertiary">
-                  {featuredStrategy
-                    ? Math.abs(featuredStrategy.drawdown).toFixed(1)
-                    : "8.4"}
-                  %
+                  {Math.abs(featuredStrategy?.drawdown ?? 0).toFixed(1)}%
                 </p>
               </div>
               <div>
@@ -138,7 +151,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                   {t("dashboard.investors")}
                 </p>
                 <p className="text-4xl font-bold text-on-surface">
-                  {featuredStrategy?.investors.toLocaleString() || "1,248"}
+                  {featuredStrategy?.investors.toLocaleString()}
                 </p>
               </div>
             </div>
@@ -147,7 +160,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 onClick={() =>
                   onNavigate(
                     "strategy-detail",
-                    featuredStrategy?.id || "static-1",
+                    featuredStrategy?.id,
                   )
                 }
                 className="bg-gradient-to-br from-primary to-primary-container text-on-primary-container px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition-transform"
@@ -158,7 +171,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                 onClick={() =>
                   onNavigate(
                     "strategy-detail",
-                    featuredStrategy?.id || "static-1",
+                    featuredStrategy?.id,
                   )
                 }
                 className="bg-surface-container-highest text-on-surface px-10 py-4 rounded-lg font-bold text-base uppercase tracking-widest hover:bg-surface-bright transition-colors"
@@ -193,6 +206,7 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
             </div>
           </div>
         </div>
+        )}
       </section>
 
       {/* Strategy Catalog Section */}
@@ -246,13 +260,16 @@ export function DashboardView({ onNavigate }: DashboardViewProps) {
                         <TrendingUp className="text-secondary w-5 h-5" />
                       </div>
                     </div>
-                    <div className="mb-6 h-12 flex items-center overflow-hidden opacity-80 rounded">
-                      {/* Placeholder for dynamic chart, using static image for MVP */}
-                      <img
-                        alt={`${strategy.display_name || strategy.name} Chart`}
-                        className="w-full object-cover"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWLeAdXhicGod-KaHisf8hyv9ufCBld7ZIoJkKfJOKEbYZUJYKoGpSqp4GnWdCrZeX_WfjjQgueGanuhlCU2hhe8mDJuAx0Yl8V7J-n64ckj_bKvGJYgs-x76UcK6xnSLPimkMES4O091nF8dMFFWYztEAaS2txWIEfp8YTtCqgqVG2MpphHQCG5ny6mc2wmHK5-37tT5grFSdYwI2yjT1gMCR_yhvxbaM9RxtbhAapIXkH2QiKhQrYSJpEbVqqWVyzMZwYdfGmGI"
-                      />
+                    <div className="mb-6 h-12 flex items-end gap-0.5 overflow-hidden rounded">
+                      {getSparklineBars(strategy).map((h, i) => (
+                        <div
+                          key={i}
+                          style={{ height: `${h}%` }}
+                          className={`w-full rounded-t-sm ${
+                            i === 7 ? 'bg-primary shadow-[0_0_8px_rgba(78,222,163,0.4)]' : 'bg-primary/50'
+                          }`}
+                        />
+                      ))}
                     </div>
                     <div className="flex justify-between items-end">
                       <div>
